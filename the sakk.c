@@ -1225,20 +1225,15 @@ int BishopMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int
         };   
         RemovePieceFromDepth(sor, oszlop, turn == WHITE ? check_depth_white : check_depth_black, table);
     }
-    printf("1\n");
     if(CheckPlace(table[remaining_bishops[0][0]][remaining_bishops[0][1]], remaining_bishops[0][0], remaining_bishops[0][1], table[remaining_bishops[0][0]][remaining_bishops[0][1]].color == WHITE ? check_depth_black : check_depth_white, table, TRUE) == 1) return 1;
-    printf("2\n");
     if (CheckWhenPieceMoves(remaining_bishops[0][0], remaining_bishops[0][1], sor, oszlop, table, check, isCheck, turn, takes) == 1) return 1;
     bool is_pawn_taken = table[sor][oszlop].type == PAWN;
     table[sor][oszlop] = table[remaining_bishops[0][0]][remaining_bishops[0][1]];
     table[remaining_bishops[0][0]][remaining_bishops[0][1]] = empty;
     if(CheckPlace(table[sor][oszlop], sor, oszlop, table[sor][oszlop].color == WHITE ? check_depth_black : check_depth_white, table, FALSE) == 1) return 1;
-    printf("3\n");
     if(CheckWhenPieceMoves(sor, oszlop, -1, -1, table, check, isCheck, turn, takes) == 1) return 1;
-    printf("4\n");
     if(CheckWhichPawnAffects(white_pawn_moves, remaining_bishops[0][0], remaining_bishops[0][1], sor, oszlop, BLACK, table, false, nothing, turn, takes, is_pawn_taken, BISHOP) || 
     CheckWhichPawnAffects(black_pawn_moves, remaining_bishops[0][0], remaining_bishops[0][1], sor, oszlop, WHITE, table, false, nothing, turn, takes, is_pawn_taken, BISHOP) == 1) return 1;
-    printf("5\n");
     if(isCheck && check){
         *king_inCheck = true;
         checkingPiece.piece = table[sor][oszlop].type;
@@ -1309,6 +1304,7 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
             while(rooks[j][0] == -1){
                 j++;
             }
+            printf("sor: %d, oszlop: %d\n",rooks[j][0], rooks[j][1]);
             if(rooks[j][0] == sor || rooks[j][1] == oszlop){
                 if(length == 4){
                     if(lepes[1] > '0' && lepes[1] <= '8'){
@@ -1331,6 +1327,7 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
     int remaining_rooks[PIECE_MAX_COUNT][2];
     int remain_db = 0;
     int *p_remain_db = &remain_db;
+    printf("count:%d rook:%d:%d\n",*p_db,rooks_avalaible[0][0],rooks_avalaible[0][1]);
     for (int i = 0; i < *p_db; i++)
     {   
         int melyik_mezo = sor == rooks_avalaible[i][0] ? 1 : 0;
@@ -2278,7 +2275,7 @@ int main(){
         }
         else if(lepes[0] == 'R'){
             if(RookMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? &black_king_inCheck : &white_king_inCheck,
-                turn == WHITE? white_rooks : black_rooks, turn == WHITE? p_wrookcount : p_bbishopcount, table, turn, 
+                turn == WHITE? white_rooks : black_rooks, turn == WHITE? p_wrookcount : p_brookcount, table, turn, 
                 turn == WHITE ? &left_white_rook_moved : &left_black_rook_moved, turn == WHITE ? &right_white_rook_moved : &right_black_rook_moved, takes, check) == 0){
                 isCorrect = true;
             }
@@ -2355,6 +2352,7 @@ int main(){
             }
             turn = turn == WHITE ? BLACK : WHITE;
             if(turn == WHITE) *p_lepesek = *p_lepesek + 1; 
+            strcpy(moves[moves_count++], actual_lepes);
         }
         else{
             CleanDepthList(temp_white, temp_black, white_king_inCheck_temp, black_king_inCheck_temp, &last_double_move, temp_last_double_move);
@@ -2362,7 +2360,6 @@ int main(){
         freeAllPieceList(temp_white);
         freeAllPieceList(temp_black);
         PrintTable(table);
-        strcpy(moves[moves_count++], actual_lepes);
     }
     return 0;
 }
