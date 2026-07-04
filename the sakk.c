@@ -258,11 +258,11 @@ void PrintTable(Piece table[HEIGHT][WIDTH]){
                 printf("\033[31m %s \033[0m",t);
             }
             else if( (i + y) % 2 == 0 ){
-                //printf("\033[100m %s \033[0m",t);
-                if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
+                printf("\033[100m %s \033[0m",t);
+                /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
                 else {
                     printf("\033[100m %s \033[0m",t);
-                }
+                }*/
                 /*switch ( check_depth_black[i][y].size)
                 {
                 case 1:
@@ -285,12 +285,12 @@ void PrintTable(Piece table[HEIGHT][WIDTH]){
                 }*/
             }
             else {
-                //printf("\033[40m %s \033[0m",t);
-                if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
+                printf("\033[40m %s \033[0m",t);
+                /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
                 else {
                     printf("\033[40m %s \033[0m",t);
                 }
-                /*switch ( check_depth_black[i][y].size)
+                switch ( check_depth_black[i][y].size)
                 {
                 case 1:
                     printf("\033[41m %s \033[0m",t);
@@ -522,6 +522,37 @@ int CheckWhichPawnAffects(PieceList pawn_moves[HEIGHT][WIDTH], int from_row, int
         addPiece(&pawn_moves[last_double_move.row+add][last_double_move.column], pawn);
     }
     return 0;
+}
+bool isKnightCheck(Piece table[HEIGHT][WIDTH], PieceColor opposite, int sor, int oszlop, int indulas[2]){
+    for (int i = 1; i <= 8; ++i)
+    {       
+        //printf("megnézett hely[ sor: %d, oszlop: %d  ]", indulas[0], indulas[1]);
+        //printf("bábu: %s \n", getPiece(table[indulas[0]][indulas[1]].color, table[indulas[0]][indulas[1]].type));
+        //printf("sor: %d, oszlop: %d", indulas[0], indulas[1]);
+        if (indulas[0]>=0 && indulas[0]<=7 && indulas[1]>=0 && indulas[1]<=7 && table[indulas[0]][indulas[1]].type == KING && table[indulas[0]][indulas[1]].color == opposite)
+        {   
+            return true;
+        }
+        if(i<4 && i%2 == 1){
+            indulas[1] = indulas[1] + 2;
+        }
+        else if (i<4 && i%2 == 0){
+            indulas[0] = sor - 2;
+            indulas[1] = oszlop - 1;
+        }
+        else if (i==4){
+            indulas[0] = sor - 1;
+            indulas[1] = oszlop - 2;
+        }
+        else if(i>4 && i%2 == 1){
+            indulas[0] = indulas[0] + 2;
+        }
+        else{
+            indulas[0] = sor - 1;
+            indulas[1] = oszlop + 2;
+        }
+    }
+    return false;
 }
 int EnPassant(int from_column, int row, int column, PiecePlace last_double_move, PieceColor turn, Piece table[HEIGHT][WIDTH], bool check, bool takes){
     int add = turn == WHITE ? 1 : -1;
@@ -1024,7 +1055,8 @@ int KnightMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, Pie
             return 1;
         }
     }
-    bool isCheck = false;
+    int second_indulas[2] = {sor+2, oszlop-1};
+    bool isCheck = isKnightCheck(table, turn == WHITE ? BLACK : WHITE, sor, oszlop,second_indulas);
     if(hova_sor == king[0] && hova_oszlop == king[1]){
         isCheck = true;
     }
@@ -1317,7 +1349,7 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
         return 1;
     }
     if(white_king_inCheck || black_king_inCheck){
-        if(IsCheckChanged(table,sor,oszlop,remaining_rooks[0][0],remaining_rooks[0][1],takes,turn == WHITE ? white_king : black_king) == 1){
+        if(IsCheckChanged(table,remaining_rooks[0][0],remaining_rooks[0][1],sor,oszlop,takes,turn == WHITE ? white_king : black_king) == 1){
             return 1;
         }
     }
@@ -1335,13 +1367,15 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
         return 1;
     }
     int i = 0;
-    
+    int curr_count = 0;
     int curr_sor = remaining_rooks[0][0];
     int curr_oszlop = remaining_rooks[0][1];
-    while (i<*rooks_count && (rooks[i][0] != curr_sor || rooks[i][1] != curr_oszlop)){
+    while (curr_count<*rooks_count && (rooks[i][0] != curr_sor || rooks[i][1] != curr_oszlop)){
+        if(rooks[i][0] != -1) curr_count++;
         i++;
+
     }
-    if(i>=*rooks_count){
+    if(curr_count>=*rooks_count){
         printf("Nem találja a bástya listában az elemet! Hibás a kód\n");
         return 1;
     }
@@ -2140,6 +2174,9 @@ int main(){
             table[i][j] = empty;
         }     
     }
+    char moves[50][MOVE_MAX_LENGTH];
+    int moves_count = 0;
+
     int white_bishop_count = 0;
     int black_bishop_count = 0;
     int white_rook_count = 0;
@@ -2178,6 +2215,8 @@ int main(){
         printf("%s %d. lépése: ",turn == WHITE ? "Fehér" : "Fekete", lepesek_szama);
         char lepes[MOVE_MAX_LENGTH];
         scanf("%20s", lepes);
+        char actual_lepes[MOVE_MAX_LENGTH];
+        strcpy(actual_lepes,lepes);
         bool takes = false;
         bool check = false;
         if(strchr(lepes, 'x') != NULL){
@@ -2276,6 +2315,20 @@ int main(){
             }
             clearLastDoubleMove(&last_double_move);
         }
+        else if (strcmp(lepes, "moves") == 0){
+            FILE *file = fopen("moves.txt", "w");
+            if (file == NULL) {
+                printf("Nem sikerült megnyitni a fájlt.\n");
+                return 1;
+            }
+            for (int i = 0; i < moves_count; i++)
+            {
+                fprintf(file,moves[i]);
+                fprintf(file,"\n");
+            }
+            fclose(file);
+            continue;
+        }
         else{
             printf("Nincs ilyen lépés!\n");
         }
@@ -2307,7 +2360,7 @@ int main(){
         freeAllPieceList(temp_white);
         freeAllPieceList(temp_black);
         PrintTable(table);
-
+        strcpy(moves[moves_count++], actual_lepes);
     }
     return 0;
 }
