@@ -1623,6 +1623,11 @@ int KingMove(char lepes[MOVE_MAX_LENGTH], int king[2], Piece table[HEIGHT][WIDTH
         printf("Ott sakban lennél!\n");
         return 1;
     }
+    else if(((checkingPiece.piece == ROOK || checkingPiece.piece == QUEEN) && (sor == checkingPiece.row || oszlop == checkingPiece.column)) || 
+           ((checkingPiece.piece == BISHOP || checkingPiece.piece == QUEEN) && (abs(sor-checkingPiece.row) == abs(oszlop-checkingPiece.column)))){
+        printf("Ott sakban lennél!\n");
+        return 1;
+    }
     if(white_king_inCheck || black_king_inCheck){
         if(turn == BLACK && check_depth_black[sor][oszlop].size > 0){
             printf("Ott is sakkban vagy!\n");
