@@ -1304,7 +1304,6 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
             while(rooks[j][0] == -1){
                 j++;
             }
-            printf("sor: %d, oszlop: %d\n",rooks[j][0], rooks[j][1]);
             if(rooks[j][0] == sor || rooks[j][1] == oszlop){
                 if(length == 4){
                     if(lepes[1] > '0' && lepes[1] <= '8'){
@@ -1327,7 +1326,6 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
     int remaining_rooks[PIECE_MAX_COUNT][2];
     int remain_db = 0;
     int *p_remain_db = &remain_db;
-    printf("count:%d rook:%d:%d\n",*p_db,rooks_avalaible[0][0],rooks_avalaible[0][1]);
     for (int i = 0; i < *p_db; i++)
     {   
         int melyik_mezo = sor == rooks_avalaible[i][0] ? 1 : 0;
@@ -1408,9 +1406,9 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
     else if(rooks[i][0] == 0 && rooks[i][1] == 7){
         *left_rook_moved = true;
     }
-    else if(isCheck && check){
+    if(isCheck && check){
         *king_inCheck = true;
-            checkingPiece.piece = table[sor][oszlop].type;
+        checkingPiece.piece = table[sor][oszlop].type;
         checkingPiece.row = sor;
         checkingPiece.column = oszlop;
     }
