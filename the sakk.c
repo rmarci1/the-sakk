@@ -1206,13 +1206,14 @@ int BishopMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int
         return 1;
     }
     int i = 0;
-    
+    int curr_count = 0;
     int curr_sor = remaining_bishops[0][0];
     int curr_oszlop = remaining_bishops[0][1];
-    while (i<*bishops_count && (bishops[i][0] != curr_sor || bishops[i][1] != curr_oszlop)){
+    while (curr_count<*bishops_count && (bishops[i][0] != curr_sor || bishops[i][1] != curr_oszlop)){
+        if(bishops[i][0] != -1) curr_count++;
         i++;
     }
-    if(i>=*bishops_count){
+    if(curr_count>=*bishops_count){
         printf("Nem találja a bishops listában az elemet! Hibás a kód\n");
         return 1;
     }
@@ -1543,13 +1544,14 @@ int QueenMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int 
         return 1;
     }
     int i = 0;
-    
+    int curr_count = 0;
     int curr_sor = remaining_queens[0][0];
     int curr_oszlop = remaining_queens[0][1];
-    while (i<*queens_count && (queens[i][0] != curr_sor || queens[i][1] != curr_oszlop)){
+    while (curr_count<*queens_count && (queens[i][0] != curr_sor || queens[i][1] != curr_oszlop)){
+        if(queens[i][0] != -1) curr_count++;
         i++;
     }
-    if(i>=*queens_count){
+    if(curr_count>=*queens_count){
         printf("Nem találja a királynő listában az elemet! Hibás a kód\n");
         return 1;
     }
@@ -2324,7 +2326,7 @@ int main(){
             for (int i = 0; i < moves_count; i++)
             {
                 fprintf(file,moves[i]);
-                fprintf(file,"\n");
+                if(i!= moves_count-1) fprintf(file,"\n");
             }
             fclose(file);
             continue;
