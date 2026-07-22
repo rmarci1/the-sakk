@@ -137,6 +137,40 @@ int ChangingKingInCheck(Piece table[HEIGHT][WIDTH], bool isCheck, int check, boo
         }
     }
 }
+int IsMoveWrong(Piece table[HEIGHT][WIDTH], bool takes, int sor, int oszlop, PieceColor turn, int length){
+    if(length > 5){
+        printf("Nincs ilyen lépés!\n");
+        return 1;
+    }
+    if(!takes && table[sor][oszlop].type != EMPTY){
+        printf("Ott van már bábu!\n");
+        return 1;
+    }
+    else if(takes && table[sor][oszlop].color == turn){
+        printf("A saját bábudat nem tudod leütni!\n");
+        return 1;
+    }
+    else if(takes && table[sor][oszlop].type == EMPTY){
+        printf("Ott nincs bábu amit le lehet ütni!\n");
+        return 1;
+    }
+}
+int isPieceFoundCorrect(Piece table[HEIGHT][WIDTH], int* p_remain_db, int from_row, int from_col, int row, int col, bool takes, 
+    PieceColor turn,char not_found[50], char more_than_one_found[50]){
+     if(*p_remain_db == 0){
+        printf("Hiba nincs futó ami odatud lépni\n");
+        return 1;
+    }
+    if(*p_remain_db > 1){
+        printf("Több futó közül lehet választani!\n");
+        return 1;
+    }
+    if(white_king_inCheck || black_king_inCheck){
+        if(IsCheckChanged(table, from_row, from_col, row, col, takes,turn == WHITE ? white_king : black_king) == 1){
+            return 1;
+        }
+    }
+}
 int IsCheck(bool isCheck, bool check){
     if(!isCheck && check){
         printf("Ez nem sakk!\n");
@@ -870,33 +904,14 @@ int PawnMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, Piece
     ChangingKingInCheck(table,isCheck,check,king_inCheck,sor,oszlop,turn);
     return 0;
 }
-int KnightMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, Piece table[HEIGHT][WIDTH], PieceColor turn, bool takes, bool check){
-    int length = strlen(lepes);
-    int oszlop = length == 3 ? lepes[1] - 'a' : length == 4 ? lepes[2] - 'a' : lepes[3] - 'a';
-    int sor = length == 3 ? lepes[2]-'0'-1 : length == 4 ? lepes[3] - '0' - 1 : lepes[4] - '0' - 1;
-    if(!takes && table[sor][oszlop].type != EMPTY){
-        printf("Ott van már bábu!\n");
-        return 1;
-    }
-    else if(takes && table[sor][oszlop].color == turn){
-        printf("A saját bábudat nem tudod leütni!\n");
-        return 1;
-    }
-    else if(takes && table[sor][oszlop].type == EMPTY){
-        printf("Ott nincs bábu amit le lehet ütni!\n");
-        return 1;
-    }
-    //printf("oszlop: %d\n",oszlop);
-    //printf("sor: %d\n",sor);
+int KnightMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, Piece table[HEIGHT][WIDTH], PieceColor turn, bool takes, bool check, int sor, int oszlop, int length){
+    if(IsMoveWrong(table, takes, sor, oszlop, turn, length) == 1) return 1;
     int lovak[8][2];
     int db = 0;
     int* p_db = &db;
     int indulas[2] = {sor+2, oszlop-1};
     for (int i = 1; i <= 8; ++i)
     {       
-        //printf("megnézett hely[ sor: %d, oszlop: %d  ]", indulas[0], indulas[1]);
-        //printf("bábu: %s \n", getPiece(table[indulas[0]][indulas[1]].color, table[indulas[0]][indulas[1]].type));
-        //printf("sor: %d, oszlop: %d", indulas[0], indulas[1]);
         if (indulas[0]>=0 && indulas[0]<=7 && indulas[1]>=0 && indulas[1]<=7 && table[indulas[0]][indulas[1]].type == KNIGHT && table[indulas[0]][indulas[1]].color == turn)
         {   
             lovak[db][0] = indulas[0];
@@ -1016,26 +1031,8 @@ int KnightMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, Pie
     return 0;
 }
 int BishopMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int bishops[PIECE_MAX_COUNT][2], 
-    int* bishops_count, Piece table[HEIGHT][WIDTH], PieceColor turn, bool takes, bool check){
-    int length = strlen(lepes);
-    if(length > 5){
-        printf("Nincs ilyen lépés!\n");
-        return 1;
-    }
-    int oszlop = length == 3 ? lepes[1] - 'a' : length == 4 ? lepes[2] - 'a' : lepes[3] - 'a';
-    int sor = length == 3 ? lepes[2]-'0'-1 : length == 4 ? lepes[3] - '0' - 1 : lepes[4] - '0' - 1;
-    if(!takes && table[sor][oszlop].type != EMPTY){
-        printf("Ott van már bábu!\n");
-        return 1;
-    }
-    else if(takes && table[sor][oszlop].color == turn){
-        printf("A saját bábudat nem tudod leütni!\n");
-        return 1;
-    }    
-    else if(takes && table[sor][oszlop].type == EMPTY){
-        printf("Ott nincs bábu amit le lehet ütni!\n");
-        return 1;
-    }
+    int* bishops_count, Piece table[HEIGHT][WIDTH], PieceColor turn, bool takes, bool check, int sor, int oszlop, int length){
+    if(IsMoveWrong(table, takes, sor, oszlop, turn, length) == 1) return 1;
     int bishops_avalaible[PIECE_MAX_COUNT][2];
 
     int db = 0;
@@ -1099,19 +1096,9 @@ int BishopMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int
             *p_remain_db = *p_remain_db + 1;
         }
     }
-    if(*p_remain_db == 0){
-        printf("Hiba nincs futó ami odatud lépni\n");
-        return 1;
-    }
-    if(*p_remain_db > 1){
-        printf("Több futó közül lehet választani!\n");
-        return 1;
-    }
-    if(white_king_inCheck || black_king_inCheck){
-        if(IsCheckChanged(table,remaining_bishops[0][0],remaining_bishops[0][1],sor,oszlop,takes,turn == WHITE ? white_king : black_king) == 1){
-            return 1;
-        }
-    }
+
+    if(isPieceFoundCorrect(table,*p_remain_db,remaining_bishops[0][0],remaining_bishops[0][1],sor,oszlop,takes,turn,
+        "Hiba nincs futó ami odatud lépni","Több futó közül lehet választani!") == 1) return 1;
     int isCheck = false;
     if(abs(sor - king[0]) == abs(oszlop - king[1])){
         isCheck = isPieceBetween('B',2,sor,oszlop,king[0],king[1],table);
@@ -1142,27 +1129,8 @@ int BishopMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int
     return 0;
 }
 int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int rooks[PIECE_MAX_COUNT][2], int* rooks_count, 
-    Piece table[HEIGHT][WIDTH], PieceColor turn, bool* left_rook_moved, bool* right_rook_moved, bool takes, bool check){
-    int length = strlen(lepes);
-    if(length > 5){
-        printf("Nincs ilyen lépés!\n");
-        return 1;
-    }
-    int oszlop = length == 3 ? lepes[1] - 'a' : length == 4 ? lepes[2] - 'a' : lepes[3] - 'a';
-    int sor = length == 3 ? lepes[2]-'0'-1 : length == 4 ? lepes[3] - '0' - 1 : lepes[4] - '0' - 1;
-
-    if(!takes && table[sor][oszlop].type != EMPTY){
-        printf("Ott van már bábu!\n");
-        return 1;
-    }
-    else if(takes && table[sor][oszlop].color == turn){
-        printf("A saját bábudat nem tudod leütni!\n");
-        return 1;
-    }    
-    else if(takes && table[sor][oszlop].type == EMPTY){
-        printf("Ott nincs bábu amit le lehet ütni!\n");
-        return 1;
-    }
+    Piece table[HEIGHT][WIDTH], PieceColor turn, bool* left_rook_moved, bool* right_rook_moved, bool takes, bool check, int sor, int oszlop, int length){
+    if(IsMoveWrong(table, takes, sor, oszlop, turn, length) == 1) return 1;
     int rooks_avalaible[PIECE_MAX_COUNT][2];
 
     int db = 0;
@@ -1227,19 +1195,8 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
             *p_remain_db = *p_remain_db + 1;
         }
     }
-    if(*p_remain_db == 0){
-        printf("Hiba nincs bástya ami odatud lépni\n");
-        return 1;
-    }
-    if(*p_remain_db > 1){
-        printf("Több bástya közül lehet választani!\n");
-        return 1;
-    }
-    if(white_king_inCheck || black_king_inCheck){
-        if(IsCheckChanged(table,remaining_rooks[0][0],remaining_rooks[0][1],sor,oszlop,takes,turn == WHITE ? white_king : black_king) == 1){
-            return 1;
-        }
-    }
+    if(isPieceFoundCorrect(table,*p_remain_db,remaining_rooks[0][0],remaining_rooks[0][1],sor,oszlop,takes,turn,
+        "Hiba nincs bástya ami odatud lépni","Több bástya közül lehet választani!") == 1) return 1;
     bool isCheck = false;
     if(sor == king[0] || oszlop == king[1]){
         int melyik_mezo = sor == king[0] ? 1 : 0;
@@ -1286,27 +1243,8 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
     return 0;
 }
 int QueenMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int queens[PIECE_MAX_COUNT-1][2], 
-    int* queens_count, Piece table[HEIGHT][WIDTH], PieceColor turn, bool takes, bool check){
-    int length = strlen(lepes);
-    if(length > 5){
-        printf("Nincs ilyen lépés!\n");
-        return 1;
-    }
-    int oszlop = length == 3 ? lepes[1] - 'a' : length == 4 ? lepes[2] - 'a' : lepes[3] - 'a';
-    int sor = length == 3 ? lepes[2]-'0'-1 : length == 4 ? lepes[3] - '0' - 1 : lepes[4] - '0' - 1;
-
-    if(!takes && table[sor][oszlop].type != EMPTY){
-        printf("Ott van már bábu!\n");
-        return 1;
-    }
-    else if(takes && table[sor][oszlop].color == turn){
-        printf("A saját bábudat nem tudod leütni!\n");
-        return 1;
-    }    
-    else if(takes && table[sor][oszlop].type == EMPTY){
-        printf("Ott nincs bábu amit le lehet ütni!\n");
-        return 1;
-    }
+    int* queens_count, Piece table[HEIGHT][WIDTH], PieceColor turn, bool takes, bool check, int sor, int oszlop, int length){
+    if(IsMoveWrong(table, takes, sor, oszlop, turn, length) == 1) return 1;
     int queens_avalaible[PIECE_MAX_COUNT][2];
 
     int db = 0;
@@ -1373,21 +1311,10 @@ int QueenMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int 
             *p_remain_db = *p_remain_db + 1;
         }
     }
-    if(*p_remain_db == 0){
-        printf("Hiba nincs királynő ami odatud lépni\n");
-        return 1;
-    }
-    if(*p_remain_db > 1){
-        printf("Több királynő közül lehet választani!\n");
-        return 1;
-    }
-    if(white_king_inCheck || black_king_inCheck){
-        if(IsCheckChanged(table,remaining_queens[0][0],remaining_queens[0][1],sor,oszlop,takes,turn == WHITE ? white_king : black_king) == 1){
-            return 1;
-        }
-    }
+    if(isPieceFoundCorrect(table,*p_remain_db,remaining_queens[0][0],remaining_queens[0][1],sor,oszlop,takes,turn,
+        "Hiba nincs királynő ami odatud lépni","Több királynő közül lehet választani!") == 1) return 1;
+        
     bool isCheck = false;
-
     if(sor == king[0] || oszlop == king[1] || abs(sor-king[0]) == abs(oszlop-king[1])){
         int melyik_mezo = king[0] == sor ? 1 : king[1] == oszlop ? 0 : 2;
         isCheck = isPieceBetween('Q',melyik_mezo,sor,oszlop,king[0],king[1],table);
@@ -1434,18 +1361,7 @@ int KingMove(char lepes[MOVE_MAX_LENGTH], int king[2], Piece table[HEIGHT][WIDTH
         printf("Nincs ilyen mező a pályán!\n");
         return 1;
     }
-    if(!takes && table[sor][oszlop].type != EMPTY){
-        printf("Ott van már bábu!\n");
-        return 1;
-    }
-    else if(takes && table[sor][oszlop].color == turn){
-        printf("A saját bábudat nem tudod leütni!\n");
-        return 1;
-    }    
-    else if(takes && table[sor][oszlop].type == EMPTY){
-        printf("Ott nincs bábu amit le lehet ütni!\n");
-        return 1;
-    }
+    if(IsMoveWrong(table, takes, sor, oszlop, turn, length) == 1) return 1;
     if(abs(sor-king[0]) > 1 || abs(oszlop-king[1]) > 1){
         printf("Oda nem tud lépni a király!\n");
         return 1;
@@ -2161,75 +2077,75 @@ int main(){
                 isCorrect = true;
             }
         }
-        else if(lepes[0] == 'N'){
-            if(KnightMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? &black_king_inCheck : &white_king_inCheck, table, turn, takes, check) == 0){
-                isCorrect = true;
-            }
-            clearLastDoubleMove(&last_double_move);
-        }
-        else if(lepes[0] == 'B'){
-            if(BishopMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? &black_king_inCheck : &white_king_inCheck, turn == WHITE? white_bishops : black_bishops, turn == WHITE? p_wbishopcount : p_bbishopcount,table,turn, takes, check) == 0){
-                isCorrect = true;
-            }
-            clearLastDoubleMove(&last_double_move);
-        }
-        else if(lepes[0] == 'R'){
-            if(RookMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? &black_king_inCheck : &white_king_inCheck,
-                turn == WHITE? white_rooks : black_rooks, turn == WHITE? p_wrookcount : p_brookcount, table, turn, 
-                turn == WHITE ? &left_white_rook_moved : &left_black_rook_moved, turn == WHITE ? &right_white_rook_moved : &right_black_rook_moved, takes, check) == 0){
-                isCorrect = true;
-            }
-            clearLastDoubleMove(&last_double_move);
-        }
-        else if(lepes[0] == 'Q'){
-            if(QueenMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? 
-                &black_king_inCheck : &white_king_inCheck, turn == WHITE? white_queens : black_queens,
-                 turn == WHITE? p_wqueencount : p_bqueencount, table, turn, takes, check) == 0){
-                isCorrect = true;
-            }
-            clearLastDoubleMove(&last_double_move);
-        }
-        else if(lepes[0] == 'K'){
-            if(KingMove(lepes, turn == WHITE? white_king : black_king, table, turn, turn == WHITE ? 
-                &white_king_moved : &black_king_moved, takes, check, turn == WHITE ? check_depth_white : check_depth_black) == 0){
-                isCorrect = true;
-            }
-            clearLastDoubleMove(&last_double_move);
-        }
-        else if(strcmp(lepes,"O-O") == 0){
-            if(Castle(turn == WHITE ? white_king : black_king, table, turn, turn == WHITE ? &white_king_moved : &black_king_moved, true, turn == WHITE?
-            left_white_rook_moved : left_black_rook_moved, turn == WHITE ? right_black_rook_moved : right_white_rook_moved, turn == WHITE ? 7 : 0, 7, empty, 
-            turn == WHITE ? white_rooks : black_rooks, turn == WHITE ? white_rook_count : black_rook_count, 
-            check, turn == WHITE ? check_depth_white : check_depth_black, takes) == 0){
-                isCorrect = true;
-            }
-            clearLastDoubleMove(&last_double_move);
-        }   
-        else if (strcmp(lepes,"O-O-O") == 0){
-            if(Castle(turn == WHITE ? white_king : black_king, table, turn, turn == WHITE ? &white_king_moved : &black_king_moved, false, turn == WHITE?
-            left_white_rook_moved : left_black_rook_moved, turn == WHITE ? right_black_rook_moved : right_white_rook_moved, turn == WHITE ? 7 : 0, 0, 
-            empty, turn == WHITE ? white_rooks : black_rooks, turn == WHITE ? white_rook_count : black_rook_count, 
-            check, turn == WHITE ? check_depth_white : check_depth_black, takes) == 0){
-                isCorrect = true;
-            }
-            clearLastDoubleMove(&last_double_move);
-        }
-        else if (strcmp(lepes, "moves") == 0){
-            FILE *file = fopen("moves.txt", "w");
-            if (file == NULL) {
-                printf("Nem sikerült megnyitni a fájlt.\n");
-                return 1;
-            }
-            for (int i = 0; i < moves_count; i++)
-            {
-                fprintf(file,moves[i]);
-                if(i!= moves_count-1) fprintf(file,"\n");
-            }
-            fclose(file);
-            continue;
-        }
         else{
-            printf("Nincs ilyen lépés!\n");
+            int length = strlen(lepes);
+            int sor = length == 3 ? lepes[2]-'0'-1 : length == 4 ? lepes[3] - '0' - 1 : lepes[4] - '0' - 1;
+            int oszlop = length == 3 ? lepes[1] - 'a' : length == 4 ? lepes[2] - 'a' : lepes[3] - 'a';
+            if(lepes[0] == 'N'){
+                if(KnightMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? &black_king_inCheck : &white_king_inCheck, table, turn, takes, check, sor, oszlop, length) == 0){
+                    isCorrect = true;
+                }
+            }
+            else if(lepes[0] == 'B'){
+                if(BishopMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? &black_king_inCheck : &white_king_inCheck, turn == WHITE? white_bishops : black_bishops, turn == WHITE? p_wbishopcount : p_bbishopcount,table,turn, takes, check, sor, oszlop, length) == 0){
+                    isCorrect = true;
+                }
+            }
+            else if(lepes[0] == 'R'){
+                if(RookMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? &black_king_inCheck : &white_king_inCheck,
+                    turn == WHITE? white_rooks : black_rooks, turn == WHITE? p_wrookcount : p_brookcount, table, turn, 
+                    turn == WHITE ? &left_white_rook_moved : &left_black_rook_moved, turn == WHITE ? &right_white_rook_moved : &right_black_rook_moved, takes, check, sor, oszlop, length) == 0){
+                    isCorrect = true;
+                }
+            }
+            else if(lepes[0] == 'Q'){
+                if(QueenMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? 
+                    &black_king_inCheck : &white_king_inCheck, turn == WHITE? white_queens : black_queens,
+                    turn == WHITE? p_wqueencount : p_bqueencount, table, turn, takes, check, sor, oszlop, length) == 0){
+                    isCorrect = true;
+                }
+            }
+            else if(lepes[0] == 'K'){
+                if(KingMove(lepes, turn == WHITE? white_king : black_king, table, turn, turn == WHITE ? 
+                    &white_king_moved : &black_king_moved, takes, check, turn == WHITE ? check_depth_white : check_depth_black) == 0){
+                    isCorrect = true;
+                }
+            }
+            else if(strcmp(lepes,"O-O") == 0){
+                if(Castle(turn == WHITE ? white_king : black_king, table, turn, turn == WHITE ? &white_king_moved : &black_king_moved, true, turn == WHITE?
+                left_white_rook_moved : left_black_rook_moved, turn == WHITE ? right_black_rook_moved : right_white_rook_moved, turn == WHITE ? 7 : 0, 7, empty, 
+                turn == WHITE ? white_rooks : black_rooks, turn == WHITE ? white_rook_count : black_rook_count, 
+                check, turn == WHITE ? check_depth_white : check_depth_black, takes) == 0){
+                    isCorrect = true;
+                }
+            }   
+            else if (strcmp(lepes,"O-O-O") == 0){
+                if(Castle(turn == WHITE ? white_king : black_king, table, turn, turn == WHITE ? &white_king_moved : &black_king_moved, false, turn == WHITE?
+                left_white_rook_moved : left_black_rook_moved, turn == WHITE ? right_black_rook_moved : right_white_rook_moved, turn == WHITE ? 7 : 0, 0, 
+                empty, turn == WHITE ? white_rooks : black_rooks, turn == WHITE ? white_rook_count : black_rook_count, 
+                check, turn == WHITE ? check_depth_white : check_depth_black, takes) == 0){
+                    isCorrect = true;
+                }
+            }
+            else if (strcmp(lepes, "moves") == 0){
+                FILE *file = fopen("moves.txt", "w");
+                if (file == NULL) {
+                    printf("Nem sikerült megnyitni a fájlt.\n");
+                    return 1;
+                }
+                for (int i = 0; i < moves_count; i++)
+                {
+                    fprintf(file,moves[i]);
+                    if(i!= moves_count-1) fprintf(file,"\n");
+                }
+                fclose(file);
+                continue;
+            }
+            else{
+                printf("Nincs ilyen lépés!\n");
+            }
+            clearLastDoubleMove(&last_double_move);
+
         }
         if(isCorrect){
             if(wasMoveDouble){
