@@ -7,6 +7,7 @@
 #define WIDTH 8
 #define MOVE_MAX_LENGTH 20
 #define PIECE_MAX_COUNT 10
+#define SPACE "\t\t\t\t"
 typedef enum{
     KING,
     QUEEN,
@@ -250,7 +251,8 @@ int IsCheckChanged(Piece table[HEIGHT][WIDTH], int sor, int oszlop, int hova_sor
     return isChanged ? 0 : 1;
 }
 void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
-    printf("  ");
+    printf("\033[9;1H");
+    printf("%s  ",SPACE);
     for (int i = 0; i < WIDTH; i++)
     {
         printf(" %c  ",'a'+i);
@@ -258,7 +260,7 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
     printf("\n");
     for (int i = 0; i < HEIGHT; ++i)
     {   
-        printf("%d ", i+1);
+        printf("%s%d ", SPACE, i+1);
         for (int y = 0; y < WIDTH; y++)
         {   
             char* t = getPiece(table[i][y].color,table[i][y].type);
@@ -328,7 +330,7 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
         }
         printf("\n");
     }
-    printf("  ");
+    printf("%s  ",SPACE);
     for (int i = 0; i < WIDTH; i++)
     {
         printf(" %c  ",'a'+i);
@@ -2258,6 +2260,7 @@ void clearLastDoubleMove(PiecePlace* last_double_move){
 }
 int main(){
     //Terminálba: chcp 65001
+    printf("\033[8;30;120t");
     Piece table[HEIGHT][WIDTH];
     empty.color = NOTHING;
     empty.type = EMPTY;
@@ -2305,12 +2308,16 @@ int main(){
     print_moves.length = 0;
     print_moves.curr_position = 0;
     PieceColor turn = WHITE;
+    printf("\033[2J");
     PrintTable(table,print_moves);
     while (vege == 0)
     {   
-        printf("%s %d. lépése: ",turn == WHITE ? "Fehér" : "Fekete", lepesek_szama);
+        printf("\033[2K");
+        printf("%s%s %d. lépése: ",SPACE,turn == WHITE ? "Fehér" : "Fekete", lepesek_szama);
         char lepes[MOVE_MAX_LENGTH];
         scanf("%20s", lepes);
+        printf("\033[2K");
+        printf("%s",SPACE);
         char actual_lepes[MOVE_MAX_LENGTH];
         strcpy(actual_lepes,lepes);
         bool takes = false;
