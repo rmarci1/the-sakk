@@ -97,6 +97,7 @@ void freeAllPieceList(PieceList[HEIGHT][WIDTH]);
 int CheckPawnMoves(PieceColor, PieceList[HEIGHT][WIDTH], int, int, bool, Piece[HEIGHT][WIDTH]);
 int CheckWhichPawnAffects(PieceList[HEIGHT][WIDTH], int, int, int, int, PieceColor,
     Piece[HEIGHT][WIDTH], bool, PiecePlace, PieceColor, bool, bool, PieceType);
+int IsCheckChanged(Piece[HEIGHT][WIDTH], int, int, int, int, bool, int[2]);
 PieceList check_depth_white[HEIGHT][WIDTH] = {0};
 PieceList check_depth_black[HEIGHT][WIDTH] = {0};
 PieceList black_pawn_moves[HEIGHT][WIDTH];
@@ -156,7 +157,7 @@ int IsMoveWrong(Piece table[HEIGHT][WIDTH], bool takes, int sor, int oszlop, Pie
     }
 }
 int isPieceFoundCorrect(Piece table[HEIGHT][WIDTH], int* p_remain_db, int from_row, int from_col, int row, int col, bool takes, 
-    PieceColor turn,char not_found[50], char more_than_one_found[50]){
+    PieceColor turn, char* not_found, char* more_than_one_found){
      if(*p_remain_db == 0){
         printf("Hiba nincs futó ami odatud lépni\n");
         return 1;
@@ -351,11 +352,11 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                 printf("\033[31m %s \033[0m",t);
             }
             else if( (i + y) % 2 == 0 ){
-                //printf("\033[100m %s \033[0m",t);
+                printf("\033[100m %s \033[0m",t);
                 /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
                 else {
                     printf("\033[100m %s \033[0m",t);
-                }*/
+                }
                 switch ( check_depth_black[i][y].size)
                 {
                 case 1:
@@ -375,14 +376,14 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                     break;
                 default:
                         printf("\033[100m %s \033[0m",t);
-                }
+                }*/
             }
             else {
-                //printf("\033[40m %s \033[0m",t);
+                printf("\033[40m %s \033[0m",t);
                 /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
                 else {
                     printf("\033[40m %s \033[0m",t);
-                }*/
+                }
                 switch ( check_depth_black[i][y].size)
                 {
                 case 1:
@@ -399,7 +400,7 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                     break;
                 default:
                     printf("\033[40m %s \033[0m",t);
-                }
+                }*/
             }
         }
         printf(" %d ", i+1);
@@ -1097,7 +1098,7 @@ int BishopMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int
         }
     }
 
-    if(isPieceFoundCorrect(table,*p_remain_db,remaining_bishops[0][0],remaining_bishops[0][1],sor,oszlop,takes,turn,
+    if(isPieceFoundCorrect(table,p_remain_db,remaining_bishops[0][0],remaining_bishops[0][1],sor,oszlop,takes,turn,
         "Hiba nincs futó ami odatud lépni","Több futó közül lehet választani!") == 1) return 1;
     int isCheck = false;
     if(abs(sor - king[0]) == abs(oszlop - king[1])){
@@ -1195,7 +1196,7 @@ int RookMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int r
             *p_remain_db = *p_remain_db + 1;
         }
     }
-    if(isPieceFoundCorrect(table,*p_remain_db,remaining_rooks[0][0],remaining_rooks[0][1],sor,oszlop,takes,turn,
+    if(isPieceFoundCorrect(table,p_remain_db,remaining_rooks[0][0],remaining_rooks[0][1],sor,oszlop,takes,turn,
         "Hiba nincs bástya ami odatud lépni","Több bástya közül lehet választani!") == 1) return 1;
     bool isCheck = false;
     if(sor == king[0] || oszlop == king[1]){
@@ -1311,9 +1312,9 @@ int QueenMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, int 
             *p_remain_db = *p_remain_db + 1;
         }
     }
-    if(isPieceFoundCorrect(table,*p_remain_db,remaining_queens[0][0],remaining_queens[0][1],sor,oszlop,takes,turn,
+    if(isPieceFoundCorrect(table,p_remain_db,remaining_queens[0][0],remaining_queens[0][1],sor,oszlop,takes,turn,
         "Hiba nincs királynő ami odatud lépni","Több királynő közül lehet választani!") == 1) return 1;
-        
+
     bool isCheck = false;
     if(sor == king[0] || oszlop == king[1] || abs(sor-king[0]) == abs(oszlop-king[1])){
         int melyik_mezo = king[0] == sor ? 1 : king[1] == oszlop ? 0 : 2;
