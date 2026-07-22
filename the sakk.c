@@ -2,6 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+#define HEIGHT 8
+#define WIDTH 8
+#define MOVE_MAX_LENGTH 20
+#define PIECE_MAX_COUNT 10
 typedef enum{
     KING,
     QUEEN,
@@ -34,16 +39,23 @@ typedef struct {
     int size;
     int capacity;
 } PieceList;
-
+typedef struct {
+    int current_turn;
+    char move[MOVE_MAX_LENGTH];
+} Move;
+typedef struct {
+    Move moves[16];
+    int length;
+    int curr_position;
+} PrintMove;
 typedef enum{
     TRUE,
     FALSE
 } Bool;
 
-#define HEIGHT 8
-#define WIDTH 8
-#define MOVE_MAX_LENGTH 20
-#define PIECE_MAX_COUNT 10
+
+
+
 
 int white_bishops[PIECE_MAX_COUNT][2];
 int black_bishops[PIECE_MAX_COUNT][2];
@@ -237,7 +249,7 @@ int IsCheckChanged(Piece table[HEIGHT][WIDTH], int sor, int oszlop, int hova_sor
     table[hova_sor][hova_oszlop] = temp_from;
     return isChanged ? 0 : 1;
 }
-void PrintTable(Piece table[HEIGHT][WIDTH]){
+void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
     printf("  ");
     for (int i = 0; i < WIDTH; i++)
     {
@@ -309,6 +321,11 @@ void PrintTable(Piece table[HEIGHT][WIDTH]){
             }
         }
         printf(" %d ", i+1);
+        if((i+1)*2 <= print_move.length){
+            printf("\t\t %d. %s %s",print_move.moves[(i+1)*2-2].current_turn, print_move.moves[(i+1)*2-2].move,print_move.moves[(i+1)*2-1].move);   
+        } else if((i+1)*2-1 <= print_move.length){
+            printf("\t\t %d. %s",print_move.moves[(i+1)*2-2].current_turn, print_move.moves[(i+1)*2-2].move);
+        }
         printf("\n");
     }
     printf("  ");
@@ -2284,8 +2301,11 @@ int main(){
     int vege = 0;
     int lepesek_szama = 1;
     int* p_lepesek = &lepesek_szama;
+    PrintMove print_moves;
+    print_moves.length = 0;
+    print_moves.curr_position = 0;
     PieceColor turn = WHITE;
-    PrintTable(table);
+    PrintTable(table,print_moves);
     while (vege == 0)
     {   
         printf("%s %d. lépése: ",turn == WHITE ? "Fehér" : "Fekete", lepesek_szama);
@@ -2410,39 +2430,49 @@ int main(){
         }
         if(isCorrect){
             if(wasMoveDouble){
-                if(turn == WHITE){
-                    while(black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column].size > 0){
-                        removePiece(&black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column],
-                            black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column].items[0]);
-                        }
+            if(turn == WHITE){
+                while(black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column].size > 0){
+                    removePiece(&black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column],
+                        black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column].items[0]);
                     }
-                    else{
-                        while(white_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column].size > 0){
-                            removePiece(&black_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column],
-                                white_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column].items[0]);
-                            }
-                        }
-                        last_double_move.piece = EMPTY;
-                        last_double_move.row = -1;
-                        last_double_move.column = -1;
-                        
-                    }
-                if(check && isMate(table, turn == WHITE ? check_depth_black : check_depth_white, turn == WHITE ? check_depth_white : check_depth_black,
-                    turn == WHITE ? black_king : white_king, turn == WHITE ? white_pawn_moves : black_pawn_moves
-                )){
-                    printf("Sakk Matt\nA %s nyert! gg\n",turn == WHITE ? "Fehér" : "Fekete");
-                    break;
                 }
-                turn = turn == WHITE ? BLACK : WHITE;
-                if(turn == WHITE) *p_lepesek = *p_lepesek + 1; 
-                strcpy(moves[moves_count++], actual_lepes);
+                else{
+                    while(white_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column].size > 0){
+                        removePiece(&black_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column],
+                            white_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column].items[0]);
+                        }
+                    }
+                    last_double_move.piece = EMPTY;
+                    last_double_move.row = -1;
+                    last_double_move.column = -1;
+                    
+            }
+            if(check && isMate(table, turn == WHITE ? check_depth_black : check_depth_white, turn == WHITE ? check_depth_white : check_depth_black,
+                turn == WHITE ? black_king : white_king, turn == WHITE ? white_pawn_moves : black_pawn_moves
+            )){
+                printf("Sakk Matt\nA %s nyert! gg\n",turn == WHITE ? "Fehér" : "Fekete");
+                break;
+            }
+            strcpy(print_moves.moves[print_moves.curr_position].move,actual_lepes);
+            print_moves.moves[print_moves.curr_position++].current_turn = *p_lepesek;
+            if(print_moves.length != 16){
+                print_moves.length++;
+            } else {
+                print_moves.length = 1;
+            }
+            if(print_moves.curr_position == 16){
+                print_moves.curr_position = 0;
+            } 
+            turn = turn == WHITE ? BLACK : WHITE;
+            if(turn == WHITE) *p_lepesek = *p_lepesek + 1; 
+            strcpy(moves[moves_count++], actual_lepes);
         }
         else{
             CleanDepthList(temp_white, temp_black, white_king_inCheck_temp, black_king_inCheck_temp, &last_double_move, temp_last_double_move);
         }
         freeAllPieceList(temp_white);
         freeAllPieceList(temp_black);
-        PrintTable(table);
+        PrintTable(table,print_moves);
     }
     return 0;
 }
