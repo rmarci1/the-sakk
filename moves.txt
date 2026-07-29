@@ -69,3 +69,8 @@ Kxh1
 b2
 Kg2
 b1=Q
+Kh2
+Qg6
+Kh1
+Bxf3+
+Kh2

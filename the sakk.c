@@ -53,7 +53,9 @@ typedef enum{
     TRUE,
     FALSE
 } Bool;
+typedef enum{
 
+} Location;
 
 
 
@@ -336,87 +338,6 @@ int IsCheckChanged(Piece table[HEIGHT][WIDTH], int sor, int oszlop, int hova_sor
     table[sor][oszlop] = temp_to;
     table[hova_sor][hova_oszlop] = temp_from;
     return isChanged ? 0 : 1;
-}
-void OldPrintTable(Piece table[HEIGHT][WIDTH]){
-    printf("  ");
-    for (int i = 0; i < WIDTH; i++)
-    {
-        printf(" %c  ",'a'+i);
-    }  
-    printf("\n");
-    for (int i = 0; i < HEIGHT; ++i)
-    {   
-        printf("%d ", i+1);
-        for (int y = 0; y < WIDTH; y++)
-        {   
-            char* t = getPiece(table[i][y].color,table[i][y].type);
-            if(table[i][y].type == KING && table[i][y].color == BLACK && black_king_inCheck == 1){
-                printf("\033[31m %s \033[0m",t);
-            }
-            else if(table[i][y].type == KING && table[i][y].color == WHITE && white_king_inCheck == 1){
-                printf("\033[31m %s \033[0m",t);
-            }
-            else if( (i + y) % 2 == 0 ){
-                printf("\033[100m %s \033[0m",t);
-                /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
-                else {
-                    printf("\033[100m %s \033[0m",t);
-                }*/
-                /*switch ( check_depth_black[i][y].size)
-                {
-                case 1:
-                    printf("\033[41m %s \033[0m",t);
-                    break;
-                case 2:
-                    printf("\033[42m %s \033[0m",t);
-                    break;
-                case 3:
-                    printf("\033[44m %s \033[0m",t);
-                    break;
-                case 4:
-                    printf("\033[45m %s \033[0m",t);
-                    break;
-                case 5:
-                    printf("\033[46m %s \033[0m",t);
-                    break;
-                default:
-                        printf("\033[100m %s \033[0m",t);
-                }*/
-            }
-            else {
-                printf("\033[40m %s \033[0m",t);
-                /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
-                else {
-                    printf("\033[40m %s \033[0m",t);
-                }
-                switch ( check_depth_black[i][y].size)
-                {
-                case 1:
-                    printf("\033[41m %s \033[0m",t);
-                    break;
-                case 2:
-                    printf("\033[42m %s \033[0m",t);
-                    break;
-                case 3:
-                    printf("\033[44m %s \033[0m",t);
-                    break;
-                case 4:
-                    printf("\033[45m %s \033[0m",t);
-                    break;
-                default:
-                    printf("\033[40m %s \033[0m",t);
-                }*/
-            }
-        }
-        printf(" %d ", i+1);
-        printf("\n");
-    }
-    printf("  ");
-    for (int i = 0; i < WIDTH; i++)
-    {
-        printf(" %c  ",'a'+i);
-    }  
-    printf("\n");
 }
 void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
     printf("\033[9;1H");
@@ -2123,6 +2044,7 @@ int main(){
     PieceColor turn = WHITE;
     printf("\033[2J");
     PrintTable(table,print_moves);
+    
     while (vege == 0)
     {   
         printf("\033[2K");
@@ -2272,7 +2194,8 @@ int main(){
             if(check && isMate(table, turn == WHITE ? check_depth_black : check_depth_white, turn == WHITE ? check_depth_white : check_depth_black,
                 turn == WHITE ? black_king : white_king, turn == WHITE ? white_pawn_moves : black_pawn_moves
             )){
-                printf("Sakk Matt\nA %s nyert! gg\n",turn == WHITE ? "Fehér" : "Fekete");
+                PrintTable(table,print_moves);
+                printf("%sSakk Matt\n%sA %s nyert! gg\n",SPACE,SPACE,turn == WHITE ? "Fehér" : "Fekete");
                 break;
             }
             if(print_moves.curr_position == 16){
