@@ -1072,7 +1072,6 @@ int KnightMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, Pie
         printf("Hibás lépés\n");
         return 1;
     }
-    printf("\nN: %d:%d",sor,oszlop);
     if(white_king_inCheck || black_king_inCheck){
         if(IsCheckChanged(table,hova_sor,hova_oszlop,sor,oszlop,takes,turn == WHITE ? white_king : black_king) == 1){
             return 1;
@@ -1522,7 +1521,8 @@ int Castle(int king[2], int oppositeKing[2], Piece table[HEIGHT][WIDTH], PieceCo
     table_piece.color = turn;
     ChangingFromMovePosition(king[0], king[1]);
     ChangingToMovePosition(king[0], king[1]+add_to_king);
-    bool isCheckOppositeSide = !isPieceBetween('R',1,rook_moved_sor,rook_column,oppositeKing[0],oppositeKing[1],table);
+    bool isCheckOppositeSide = IsCheck('R',rook_moved_sor,rook_column,oppositeKing,table);
+    //bool isCheckOppositeSide = !isPieceBetween('R',1,rook_moved_sor,rook_column,oppositeKing[0],oppositeKing[1],table);
     if(IsCheckEqualsToMove(isCheckOppositeSide,check) == 1) return 1;
     if(CheckPlace(table[king[0]][king[1]], king[0], king[1], table[king[0]][king[1]].color == WHITE ?
         check_depth_black : check_depth_white, table, TRUE) == 1){
@@ -1535,14 +1535,14 @@ int Castle(int king[2], int oppositeKing[2], Piece table[HEIGHT][WIDTH], PieceCo
     }
     table[king[0]][king[1]+add_to_king] = table_piece;
     table[king[0]][king[1]] = empty;
+    table[rook_moved_sor][rook_column] = table[rook_moved_sor][rook_moved_oszlop];
+    table[rook_moved_sor][rook_moved_oszlop] = empty;
     if(CheckWhenPieceMoves(king[0], king[1], king[0], king[1], table, false, false, turn, takes) == 1){
         return 1;
     }
     if(CheckWhenPieceMoves(rook_moved_sor, rook_moved_oszlop, rook_moved_sor, rook_moved_oszlop, table, false, false, turn, takes) == 1){
         return 1;
     }
-    table[rook_moved_sor][rook_column] = table[rook_moved_sor][rook_moved_oszlop];
-    table[rook_moved_sor][rook_moved_oszlop] = empty;
     king[1] = king[1]+add_to_king;
     if(CheckPlace(table[king[0]][king[1]], king[0], king[1], table[king[0]][king[1]].color == WHITE 
     ? check_depth_black : check_depth_white, table, FALSE) == 1)
@@ -1862,12 +1862,13 @@ int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIG
     }
     return 0;
 }
-bool IsDepthNotPawnOrKing(PiecePlace* check_depth, int size){
+bool IsDepthNotPawnOrKing(PiecePlace* check_depth, int size, int* ind){
     if(size <= 0) return false;
     for (int i = 0; i < size; i++)
     {
         if(check_depth[i].piece != PAWN && check_depth[i].piece != KING){
-            //printf("Piece: %s\n",getPiece(WHITE,check_depth[i].piece));
+            printf("\nPiece: %s\n",getPiece(WHITE,check_depth[i].piece));
+            *ind = i;
             return true;
         }
     }
@@ -1884,7 +1885,7 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
             for (int j = 0; j < 3; j++)
             {   
                 if(curr_column <= 7 && curr_column >= 0 && !KingCheck(curr_row,curr_column,check) && (table[curr_row][curr_column].type == EMPTY && check_depth[curr_row][curr_column].size <= 0)){
-                    //printf("Can move to:%d %d\n ",curr_row,curr_column);
+                    printf("Can move to:%d %d\n ",curr_row,curr_column);
                     return false;
                 }   
                 curr_column += 1;
@@ -1898,15 +1899,29 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
         int col_inc = king[1]-checkingPiece.column > 0 ? 1 : -1;
         int starting_row = checkingPiece.row;
         int starting_col = checkingPiece.column;
+        int ind = -1;
         //printf("Starting: %d:%d\n",starting_row,starting_col);
         starting_row += row_inc;
         starting_col += col_inc;
         while (table[starting_row][starting_col].type != KING){    
             //printf("Curr: %d:%d\n",starting_row,starting_col);
-            if(IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size) || 
+            if(IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size, &ind) || 
             pawn_moves[starting_row][starting_col].size > 0){
                 //printf("Can block on: %d/%d size: %d\n",starting_row,starting_col,pawn_moves[starting_row][starting_col].size);
-                return false;
+                int row = opposite_check_depth[starting_row][starting_col].items[ind].row;
+                int col = opposite_check_depth[starting_row][starting_col].items[ind].column;
+                Piece temp = table[row][col];
+                table[row][col] = empty;
+                for (size_t i = 0; i < check_depth[row][col].size; i++)
+                {   
+                    char type = check_depth[row][col].items[i].piece == QUEEN ? 'Q' : check_depth[row][col].items[i].piece == ROOK ? 'R' : 
+                    check_depth[row][col].items[i].piece == BISHOP ? 'B' : 'X';
+                    if(!IsCheck(type,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,king,table)){
+                        printf("\nCan block on: %d/%d\n",starting_row,starting_col);
+                        return false;
+                    }
+                }
+                table[row][col] = temp;
             }
             starting_row += row_inc;
             starting_col += col_inc;
@@ -1919,15 +1934,29 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
         int col_inc = king[1]-checkingPiece.column > 0 ? 1 : -1;
         int starting_row = checkingPiece.row;
         int starting_col = checkingPiece.column;
+        int ind = -1;
         if (row_or_col) starting_col += col_inc;
         else starting_row += row_inc;
         while (table[starting_row][starting_col].type != KING) { 
             if(row_or_col) starting_col += col_inc;
             else starting_row += row_inc;
-            if(IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size) || 
+            if(IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size, &ind) || 
             pawn_moves[starting_row][starting_col].size > 0){
-                //printf("Can block on: %d/%d\n",starting_row,starting_col);
-                return false;
+                int row = opposite_check_depth[starting_row][starting_col].items[ind].row;
+                int col = opposite_check_depth[starting_row][starting_col].items[ind].column;
+                printf("\nPiece: %d:%d\n",row,col);
+                Piece temp = table[row][col];
+                table[row][col] = empty;
+                for (size_t i = 0; i < check_depth[row][col].size; i++)
+                {   
+                    char type = check_depth[row][col].items[i].piece == QUEEN ? 'Q' : check_depth[row][col].items[i].piece == ROOK ? 'R' : 
+                    check_depth[row][col].items[i].piece == BISHOP ? 'B' : 'X';
+                    if(!IsCheck(type,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,king,table)){
+                        printf("\nCan block on: %d/%d\n",starting_row,starting_col);
+                        return false;
+                    }
+                }
+                table[row][col] = temp;
             }
         } 
     }
