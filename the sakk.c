@@ -1862,19 +1862,36 @@ int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIG
     }
     return 0;
 }
+Piece PieceinDirection(Piece table[HEIGHT][WIDTH], int from_row, int from_col, int row, int col){
+    // 0:row 1:col 2:diagonal
+    int inc_row = row == from_row ? 0 : row > from_row ? 1 : -1;
+    int inc_col = col == from_col ? 0 : col > from_col ? 1 : -1;
+    int curr_row = row;
+    int curr_col = col;
+    //printf("\nfrom: %d:%d to: %d:%d P: %s\n",from_col,from_col,row,col,table[curr_row][curr_col].type != EMPTY ? "YEAH" : "NAY");
+    while(table[curr_row][curr_col].type == EMPTY && curr_row < 7 && curr_row > 0 && curr_col < 7 && curr_col > 0){
+        curr_row += inc_row;
+        curr_col += inc_col;
+        //printf("CurrInc:%d:%d\n",curr_row,curr_col);
+    }
+    //printf("Done\n");
+    return table[curr_row][curr_col];
+     
+}
 bool IsDepthNotPawnOrKing(PiecePlace* check_depth, int size, int* ind){
     if(size <= 0) return false;
     for (int i = 0; i < size; i++)
-    {
+    {   
+        //printf("\nsize:%d\n",check_depth[i].piece);
         if(check_depth[i].piece != PAWN && check_depth[i].piece != KING){
-            printf("\nPiece: %s\n",getPiece(WHITE,check_depth[i].piece));
+            //printf("\nPiece: %s\n",getPiece(WHITE,check_depth[i].piece));
             *ind = i;
             return true;
         }
     }
     return false;
 }
-bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], PieceList opposite_check_depth[HEIGHT][WIDTH], int king[2], PieceList pawn_moves[HEIGHT][WIDTH], bool check){
+bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], PieceList opposite_check_depth[HEIGHT][WIDTH], int king[2], PieceList pawn_moves[HEIGHT][WIDTH], bool check, PieceColor opposite){
     if(opposite_check_depth[checkingPiece.row][checkingPiece.column].size > 0 && check_depth[checkingPiece.row][checkingPiece.column].size <= 0) return false;
     int curr_row = king[0]-1;
     int curr_column = king[1]-1;
@@ -1885,7 +1902,7 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
             for (int j = 0; j < 3; j++)
             {   
                 if(curr_column <= 7 && curr_column >= 0 && !KingCheck(curr_row,curr_column,check) && (table[curr_row][curr_column].type == EMPTY && check_depth[curr_row][curr_column].size <= 0)){
-                    printf("Can move to:%d %d\n ",curr_row,curr_column);
+                    printf("\nCan move to:%d %d\n ",curr_row,curr_column);
                     return false;
                 }   
                 curr_column += 1;
@@ -1904,7 +1921,7 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
         starting_row += row_inc;
         starting_col += col_inc;
         while (table[starting_row][starting_col].type != KING){    
-            //printf("Curr: %d:%d\n",starting_row,starting_col);
+            //printf("Curr: %d:%d",starting_row,starting_col);
             if(IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size, &ind) || 
             pawn_moves[starting_row][starting_col].size > 0){
                 //printf("Can block on: %d/%d size: %d\n",starting_row,starting_col,pawn_moves[starting_row][starting_col].size);
@@ -1912,16 +1929,21 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
                 int col = opposite_check_depth[starting_row][starting_col].items[ind].column;
                 Piece temp = table[row][col];
                 table[row][col] = empty;
-                for (size_t i = 0; i < check_depth[row][col].size; i++)
+                bool canBlock = true;
+                for (int i = 0; i < check_depth[row][col].size; i++)
                 {   
-                    char type = check_depth[row][col].items[i].piece == QUEEN ? 'Q' : check_depth[row][col].items[i].piece == ROOK ? 'R' : 
-                    check_depth[row][col].items[i].piece == BISHOP ? 'B' : 'X';
-                    if(!IsCheck(type,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,king,table)){
-                        printf("\nCan block on: %d/%d\n",starting_row,starting_col);
-                        return false;
+                    Piece piece = PieceinDirection(table,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,row,col);
+                    if(piece.color == opposite && piece.type == KING){
+                        canBlock = false;
+                        break;
                     }
                 }
+                printf("haha\n");
                 table[row][col] = temp;
+                if(canBlock){
+                    printf("\nCan block on: %d/%d\n",starting_row,starting_col);
+                    return false;
+                }
             }
             starting_row += row_inc;
             starting_col += col_inc;
@@ -1938,26 +1960,33 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
         if (row_or_col) starting_col += col_inc;
         else starting_row += row_inc;
         while (table[starting_row][starting_col].type != KING) { 
-            if(row_or_col) starting_col += col_inc;
-            else starting_row += row_inc;
+            printf("\nCurr: %d:%d\n",starting_row,starting_col);
             if(IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size, &ind) || 
             pawn_moves[starting_row][starting_col].size > 0){
+                printf("\nStarting row: %d:%d\n",starting_row,starting_col);
                 int row = opposite_check_depth[starting_row][starting_col].items[ind].row;
                 int col = opposite_check_depth[starting_row][starting_col].items[ind].column;
-                printf("\nPiece: %d:%d\n",row,col);
                 Piece temp = table[row][col];
                 table[row][col] = empty;
-                for (size_t i = 0; i < check_depth[row][col].size; i++)
+                bool canBlock = true;
+                for (int i = 0; i < check_depth[row][col].size; i++)
                 {   
-                    char type = check_depth[row][col].items[i].piece == QUEEN ? 'Q' : check_depth[row][col].items[i].piece == ROOK ? 'R' : 
-                    check_depth[row][col].items[i].piece == BISHOP ? 'B' : 'X';
-                    if(!IsCheck(type,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,king,table)){
-                        printf("\nCan block on: %d/%d\n",starting_row,starting_col);
-                        return false;
+                    Piece piece = PieceinDirection(table,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,row,col);
+                    printf("piece: %c\n",getPiece(piece.color,piece.type));
+                    if(piece.color == opposite && piece.type == KING){
+                        canBlock = false;
+                        break;
                     }
                 }
+                printf("haha\n");
                 table[row][col] = temp;
+                if(canBlock){
+                    printf("\nCan block on: %d/%d\n",starting_row,starting_col);
+                    return false;
+                }
             }
+            if(row_or_col) starting_col += col_inc;
+            else starting_row += row_inc;
         } 
     }
     return true;
@@ -2054,7 +2083,7 @@ void clearLastDoubleMove(PiecePlace* last_double_move){
 }
 int main(){
     //Terminálba: chcp 65001
-    printf("\033[8;30;120t");
+    //printf("\033[8;30;120t");
     Piece table[HEIGHT][WIDTH];
     empty.color = NOTHING;
     empty.type = EMPTY;
@@ -2254,7 +2283,7 @@ int main(){
                     
             }
             if(check && isMate(table, turn == WHITE ? check_depth_black : check_depth_white, turn == WHITE ? check_depth_white : check_depth_black,
-                turn == WHITE ? black_king : white_king, turn == WHITE ? white_pawn_moves : black_pawn_moves, check
+                turn == WHITE ? black_king : white_king, turn == WHITE ? white_pawn_moves : black_pawn_moves, check, turn == WHITE ? BLACK : WHITE
             )){
                 PrintTable(table,print_moves);
                 printf("%sSakk Matt\n%sA %s nyert! gg\n",SPACE,SPACE,turn == WHITE ? "Fehér" : "Fekete");
