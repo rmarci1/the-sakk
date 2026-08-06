@@ -104,6 +104,8 @@ int IsCheckChanged(Piece[HEIGHT][WIDTH], int, int, int, int, bool, int[2]);
 void PrintTable(Piece[HEIGHT][WIDTH], PrintMove);
 void ChangingFromMovePosition(int, int);
 void ChangingToMovePosition(int, int);
+bool CanBlock(Piece[HEIGHT][WIDTH], PieceList[HEIGHT][WIDTH], int, int, PieceColor);
+Piece PieceinDirection(Piece[HEIGHT][WIDTH], int, int, int, int);
 PieceList check_depth_white[HEIGHT][WIDTH] = {0};
 PieceList check_depth_black[HEIGHT][WIDTH] = {0};
 PieceList black_pawn_moves[HEIGHT][WIDTH];
@@ -122,6 +124,11 @@ bool IsCheck(char type, int sor, int oszlop, int king[2], Piece table[HEIGHT][WI
 }
 int ChangingTablePositions(Piece table[HEIGHT][WIDTH], int from_row, int from_col, int row, int col, bool check, bool isCheck, 
     PieceColor turn, bool takes, bool is_pawn_taken, PiecePlace last_double_move){
+    int canBlock = CanBlock(table, table[from_row][from_col].color == WHITE ? check_depth_white : check_depth_black, from_row, from_col, turn);
+    if(!canBlock){
+        printf("Sakkban lennél!");
+        return 1;
+    }
     if(CheckPlace(table[from_row][from_col], from_row, from_col, table[from_row][from_col].color == WHITE ? check_depth_black : check_depth_white, table, TRUE) == 1) return 1;
     if(CheckWhenPieceMoves(from_row, from_col, row, col, table, check, isCheck, turn, takes) == 1) return 1;
     if(table[from_row][from_col].type == PAWN){
@@ -386,15 +393,15 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
             else if(table[i][y].type == KING && table[i][y].color == WHITE && white_king_inCheck == 1){
                 printf("\033[31m %s \033[0m",t);
             }
-            /*else if((i == from_move.row && y == from_move.col) || (i == to_move.row && y == to_move.col)){
+            else if((i == from_move.row && y == from_move.col) || (i == to_move.row && y == to_move.col)){
                 printf("\033[46m %s \033[0m",t);
-            }*/
+            }
             else if( (i + y) % 2 == 0 ){
-                //printf("\033[100m %s \033[0m",t);
+                printf("\033[100m %s \033[0m",t);
                 /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
                 else {
                     printf("\033[100m %s \033[0m",t);
-                }*/
+                }
                 switch ( check_depth_black[i][y].size)
                 {
                 case 1:
@@ -414,14 +421,14 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                     break;
                 default:
                         printf("\033[100m %s \033[0m",t);
-                }
+                }*/
             }
             else {
-                //printf("\033[40m %s \033[0m",t);
+                printf("\033[40m %s \033[0m",t);
                 /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
                 else {
                     printf("\033[40m %s \033[0m",t);
-                }*/
+                }
                 switch ( check_depth_black[i][y].size)
                 {
                 case 1:
@@ -438,7 +445,7 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                     break;
                 default:
                     printf("\033[40m %s \033[0m",t);
-                }
+                }*/
             }
         }
         printf(" %d ", i+1);
@@ -1862,6 +1869,22 @@ int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIG
     }
     return 0;
 }
+bool CanBlock(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], int row, int col, PieceColor king_color){
+    Piece temp = table[row][col];
+    table[row][col] = empty;
+    for (int i = 0; i < check_depth[row][col].size; i++)
+    {   
+        PieceType p = check_depth[row][col].items[i].piece;
+        if(p == PAWN || p == KING || p == KNIGHT) continue;
+        Piece piece = PieceinDirection(table,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,row,col);
+        if(piece.color == king_color && piece.type == KING){
+            table[row][col] = temp;
+            return false;
+        }
+    }
+    table[row][col] = temp;
+    return true;
+}
 Piece PieceinDirection(Piece table[HEIGHT][WIDTH], int from_row, int from_col, int row, int col){
     // 0:row 1:col 2:diagonal
     int inc_row = row == from_row ? 0 : row > from_row ? 1 : -1;
@@ -1902,7 +1925,7 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
             for (int j = 0; j < 3; j++)
             {   
                 if(curr_column <= 7 && curr_column >= 0 && !KingCheck(curr_row,curr_column,check) && (table[curr_row][curr_column].type == EMPTY && check_depth[curr_row][curr_column].size <= 0)){
-                    printf("\nCan move to:%d %d\n ",curr_row,curr_column);
+                    //printf("\nCan move to:%d %d\n ",curr_row,curr_column);
                     return false;
                 }   
                 curr_column += 1;
@@ -1927,21 +1950,8 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
                 //printf("Can block on: %d/%d size: %d\n",starting_row,starting_col,pawn_moves[starting_row][starting_col].size);
                 int row = opposite_check_depth[starting_row][starting_col].items[ind].row;
                 int col = opposite_check_depth[starting_row][starting_col].items[ind].column;
-                Piece temp = table[row][col];
-                table[row][col] = empty;
-                bool canBlock = true;
-                for (int i = 0; i < check_depth[row][col].size; i++)
-                {   
-                    Piece piece = PieceinDirection(table,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,row,col);
-                    if(piece.color == opposite && piece.type == KING){
-                        canBlock = false;
-                        break;
-                    }
-                }
-                printf("haha\n");
-                table[row][col] = temp;
+                bool canBlock = CanBlock(table,check_depth,row,col,opposite);
                 if(canBlock){
-                    printf("\nCan block on: %d/%d\n",starting_row,starting_col);
                     return false;
                 }
             }
@@ -1960,28 +1970,13 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
         if (row_or_col) starting_col += col_inc;
         else starting_row += row_inc;
         while (table[starting_row][starting_col].type != KING) { 
-            printf("\nCurr: %d:%d\n",starting_row,starting_col);
             if(IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size, &ind) || 
             pawn_moves[starting_row][starting_col].size > 0){
-                printf("\nStarting row: %d:%d\n",starting_row,starting_col);
                 int row = opposite_check_depth[starting_row][starting_col].items[ind].row;
                 int col = opposite_check_depth[starting_row][starting_col].items[ind].column;
-                Piece temp = table[row][col];
-                table[row][col] = empty;
-                bool canBlock = true;
-                for (int i = 0; i < check_depth[row][col].size; i++)
-                {   
-                    Piece piece = PieceinDirection(table,check_depth[row][col].items[i].row,check_depth[row][col].items[i].column,row,col);
-                    printf("piece: %c\n",getPiece(piece.color,piece.type));
-                    if(piece.color == opposite && piece.type == KING){
-                        canBlock = false;
-                        break;
-                    }
-                }
-                printf("haha\n");
-                table[row][col] = temp;
+                bool canBlock = CanBlock(table,check_depth,row,col,opposite);
                 if(canBlock){
-                    printf("\nCan block on: %d/%d\n",starting_row,starting_col);
+                    //printf("\nCan block on: %d/%d\n",starting_row,starting_col);
                     return false;
                 }
             }
