@@ -1482,7 +1482,7 @@ int Castle(int king[2], int oppositeKing[2], Piece table[HEIGHT][WIDTH], PieceCo
         printf("Már nem tudsz sáncolni mert léptél a királlyal!\n");
         return 1;
     }
-    PieceColor color = short_castle ? WHITE : BLACK; // Melyik oldalt nézzük ahhozképest alakítjuk ki a többi részét
+    //PieceColor color = short_castle ? WHITE : BLACK; // Melyik oldalt nézzük ahhozképest alakítjuk ki a többi részét
     if(short_castle && right_rook_moved){
         printf("Nem tudsz sáncolni mert léptél azzal a bástyával!\n");
         return 1;
@@ -1506,23 +1506,7 @@ int Castle(int king[2], int oppositeKing[2], Piece table[HEIGHT][WIDTH], PieceCo
     //int adjust = short_castle ? 0:1;
     int add_to_king = short_castle ? 2 : -2;
     int add_to_rook = short_castle ? -2 : 3;
-    bool isCheck = false; 
     int rook_column = rook_moved_oszlop+add_to_rook;
-    PieceColor opposite_color = turn == WHITE ? BLACK : WHITE;
-    //printf("col: %d\n",rook_column);
-    /*for (int i = rook_moved_oszlop + (short_castle ? -1 : 1); short_castle ? i >= 0 : i <= 7; short_castle ? i-- : i++)
-    {   
-        if(table[rook_moved_sor][i].type != EMPTY){
-            if(table[rook_moved_sor][i].type == KING && table[rook_moved_sor][i].color == opposite_color){
-                isCheck = true;
-            }
-            break;
-        }
-    }
-    if(isCheck){
-        printf("Sakkon keresztül nem tudsz sáncolni!\n");
-        return 1;
-    }*/
     Piece table_piece;
     table_piece.type = KING;
     table_piece.color = turn;
@@ -1941,7 +1925,6 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
         int col_inc = king[1]-checkingPiece.column > 0 ? 1 : -1;
         int starting_row = checkingPiece.row;
         int starting_col = checkingPiece.column;
-        int ind = -1;
         //printf("Starting: %d:%d\n",starting_row,starting_col);
         starting_row += row_inc;
         starting_col += col_inc;
@@ -1962,7 +1945,6 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
         int col_inc = king[1]-checkingPiece.column > 0 ? 1 : -1;
         int starting_row = checkingPiece.row;
         int starting_col = checkingPiece.column;
-        int ind = -1;
         if (row_or_col) starting_col += col_inc;
         else starting_row += row_inc;
         while (table[starting_row][starting_col].type != KING) { 
