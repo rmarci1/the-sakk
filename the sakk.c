@@ -2,7 +2,38 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <conio.h>
+#ifdef _WIN32
+    #include <conio.h>
+    char getch_new(void)
+    {
+        return _getch();
+    }
+    #define ENTER 13
+#else
+
+    #include <termios.h>
+    #include <unistd.h>
+    char getch_new(void)
+    {
+        struct termios oldt, newt;
+        char ch;
+
+        tcgetattr(STDIN_FILENO, &oldt);
+
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON | ECHO);
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+        ch = getchar();
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+        return ch;
+    }
+    #define ENTER 10
+
+#endif
 
 #define HEIGHT 8
 #define WIDTH 8
@@ -18,6 +49,7 @@
 #define BLACK_TILE_CLASSIC  "48;5;69"
 #define WHITE_TILE_BLUE "48;5;248"
 #define BLACK_TILE_BLUE  "48;5;239"
+#define CTRL_C 3
 typedef enum{
     KING,
     QUEEN,
@@ -624,7 +656,6 @@ int CheckPawnTypes(PieceList pawn_moves[HEIGHT][WIDTH], int row, int column, int
     }
     return 0;
 }
-
 int CheckPawnRows(Piece table[HEIGHT][WIDTH], PiecePlace pawn, int from_row, int from_column, int to_row, int to_column, int add, PieceColor curr){
     if(table[from_row+add][from_column].color == BLACK && curr == WHITE){
         pawn.row = from_row+add;
@@ -2348,7 +2379,7 @@ int main(){
         printf("\033[2K");
         if(curr_row == 2) printf("\033[100m\t>> Language \033[0m\n");
         else printf("\t> Language\n");
-        char menu = _getch();
+        char menu = getch_new();
         switch (menu)
         {
         case 's':
@@ -2358,10 +2389,10 @@ int main(){
         case 'w':
             curr_row = curr_row-1 >= MENU_MIN_LENGTH ? --curr_row : curr_row;
             break;
-        case 3:
+        case CTRL_C:
             menu_end = true;
             break;
-        case 13:
+        case ENTER:
             if(curr_row == 1){
                 bool next_menu = false;
                 
@@ -2380,14 +2411,13 @@ int main(){
                             break;
                     }
                     PrintTable(table,print_moves);
-                    char menu2 = _getch();
+                    char menu2 = getch_new();
                     switch (menu2)
                     {
-                        case 3:
+                        case CTRL_C:
                             next_menu = true;
                             break;
-                        case 13:
-                            //enter
+                        case ENTER:
                             next_menu = true;
                             break;
                         case 'd':
