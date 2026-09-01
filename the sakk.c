@@ -2,12 +2,22 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <conio.h>
 
 #define HEIGHT 8
 #define WIDTH 8
 #define MOVE_MAX_LENGTH 20
 #define PIECE_MAX_COUNT 10
+#define MENU_MIN_LENGTH 0
+#define MENU_MAX_LENGTH 2
 #define SPACE "\t\t\t\t"
+#define THE_CHESS_SPACE "\t\t\t\t"
+#define WHITE_TILE_BASE "100"
+#define BLACK_TILE_BASE "40"
+#define WHITE_TILE_CLASSIC "48;5;189"
+#define BLACK_TILE_CLASSIC  "48;5;69"
+#define WHITE_TILE_BLUE "48;5;248"
+#define BLACK_TILE_BLUE  "48;5;239"
 typedef enum{
     KING,
     QUEEN,
@@ -113,6 +123,14 @@ PieceList white_pawn_moves[HEIGHT][WIDTH];
 Location from_move;
 Location to_move;
 PrintMove print_moves;
+char* black_tile;
+char* white_tile;
+int white_bishop_count = 0;
+int black_bishop_count = 0;
+int white_rook_count = 0;
+int black_rook_count = 0;
+int white_queen_count = 0;
+int black_queen_count = 0;
 
 bool IsCheck(char type, int sor, int oszlop, int king[2], Piece table[HEIGHT][WIDTH]){
     if(abs(sor - king[0]) == abs(oszlop - king[1])){
@@ -268,6 +286,21 @@ PieceType setType(int cell, int row){
 }
 void Initialize(Piece table[HEIGHT][WIDTH])
 {
+    p_wbishopcount = &white_bishop_count;
+    p_bbishopcount = &black_bishop_count;
+    p_wrookcount = &white_rook_count;
+    p_brookcount = &black_rook_count;
+    p_wqueencount = &white_queen_count;
+    p_bqueencount = &black_queen_count;
+    nothing.piece = EMPTY;
+    nothing.row = -1;
+    nothing.column = -1;
+    print_moves.length = 0;
+    print_moves.curr_position = 0;
+    from_move.row = -1;
+    from_move.col = -1;
+    to_move.row = -1;
+    to_move.col = -1;
     for (int i = 0; i < HEIGHT; i++)
     {
         for (int y = 0; y < WIDTH; y++)
@@ -398,7 +431,7 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                 printf("\033[46m %s \033[0m",t);
             }
             else if( (i + y) % 2 == 0 ){
-                printf("\033[100m %s \033[0m",t);
+                printf("\033[%sm %s \033[0m",white_tile,t);
                 /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
                 else {
                     printf("\033[100m %s \033[0m",t);
@@ -425,7 +458,7 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                 }*/
             }
             else {
-                printf("\033[40m %s \033[0m",t);
+                printf("\033[%sm %s \033[0m",black_tile,t);
                 /*if(white_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
                 else {
                     printf("\033[40m %s \033[0m",t);
@@ -2051,35 +2084,10 @@ void clearLastDoubleMove(PiecePlace* last_double_move){
     (*last_double_move).row = -1;
     (*last_double_move).column = -1;
 }
-int main(){
-    //Terminálba: chcp 65001
-    printf("\033[8;30;120t");
-    Piece table[HEIGHT][WIDTH];
-    empty.color = NOTHING;
-    empty.type = EMPTY;
-    for (int i = 0; i < HEIGHT; i++)
-    {
-        for (int j = 0; j < WIDTH; j++)
-        {
-            table[i][j] = empty;
-        }     
-    }
+int game(Piece table[HEIGHT][WIDTH]){
+
     char(*moves)[MOVE_MAX_LENGTH] = malloc(sizeof(*moves) * 20);
     int moves_count = 0;
-
-    int white_bishop_count = 0;
-    int black_bishop_count = 0;
-    int white_rook_count = 0;
-    int black_rook_count = 0;
-    int white_queen_count = 0;
-    int black_queen_count = 0;
-
-    p_wbishopcount = &white_bishop_count;
-    p_bbishopcount = &black_bishop_count;
-    p_wrookcount = &white_rook_count;
-    p_brookcount = &black_rook_count;
-    p_wqueencount = &white_queen_count;
-    p_bqueencount = &black_queen_count;
 
     bool black_king_moved = false;
     bool white_king_moved = false;
@@ -2088,22 +2096,14 @@ int main(){
 
     bool left_white_rook_moved = false;
     bool right_white_rook_moved = false;
-    nothing.piece = EMPTY;
-    nothing.row = -1;
-    nothing.column = -1;
     PiecePlace last_double_move;
     last_double_move.piece = EMPTY;
-    Initialize(table);
+    
+
     int vege = 0;
     int lepesek_szama = 1;
     int* p_lepesek = &lepesek_szama;
-    print_moves.length = 0;
-    print_moves.curr_position = 0;
     PieceColor turn = WHITE;
-    from_move.row = -1;
-    from_move.col = -1;
-    to_move.row = -1;
-    to_move.col = -1;
     printf("\033[2J");
     PrintTable(table,print_moves);
     while (vege == 0)
@@ -2283,5 +2283,136 @@ int main(){
         freeAllPieceList(temp_black);
         PrintTable(table,print_moves);
     }
+}
+void SwitchSkins(int num){
+    switch (num)
+    {   
+        case 1:
+            black_tile = BLACK_TILE_CLASSIC;
+            white_tile = WHITE_TILE_CLASSIC;
+            break;     
+        case 2:
+            black_tile = BLACK_TILE_BLUE;
+            white_tile = WHITE_TILE_BLUE;
+            break;          
+        default:
+            black_tile = BLACK_TILE_BASE;
+            white_tile = WHITE_TILE_BASE;
+            break;
+    }
+}
+int main(){
+    //Terminálba: chcp 65001
+    printf("\033[8;30;120t");
+    int curr_row = 0;
+    bool menu_end = false;
+    printf("\033[2J");
+    printf("\033[?25l");
+    Piece table[HEIGHT][WIDTH];
+    empty.color = NOTHING;
+    empty.type = EMPTY;
+    for (int i = 0; i < HEIGHT; i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            table[i][j] = empty;
+        }     
+    }
+    Initialize(table);
+    black_tile = BLACK_TILE_BASE;
+    white_tile = WHITE_TILE_BASE;
+    int table_skins = 0;
+    while(!menu_end){
+        printf("\033[9;1H");
+        printf(
+            "%s████████╗██╗  ██╗███████╗    ██████╗██╗  ██╗███████╗███████╗███████╗\n"
+            "%s╚══██╔══╝██║  ██║██╔════╝   ██╔════╝██║  ██║██╔════╝██╔════╝██╔════╝\n"
+            "%s   ██║   ███████║█████╗     ██║     ███████║█████╗  ███████╗███████╗\n"
+            "%s   ██║   ██╔══██║██╔══╝     ██║     ██╔══██║██╔══╝  ╚════██║╚════██║\n"
+            "%s   ██║   ██║  ██║███████╗   ╚██████╗██║  ██║███████╗███████║███████║\n"
+            "%s   ╚═╝   ╚═╝  ╚═╝╚══════╝    ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝\n",
+            
+            THE_CHESS_SPACE,
+            THE_CHESS_SPACE,
+            THE_CHESS_SPACE,
+            THE_CHESS_SPACE,
+            THE_CHESS_SPACE,
+            THE_CHESS_SPACE
+        );
+        printf("\033[2K");
+        if(curr_row == 0) printf("\033[100m\t>> Start game\033[0m\n");
+        else printf("\t> Start game\n");
+        printf("\033[2K");
+        if(curr_row == 1) printf("\033[100m\t>> Switch Board Color \033[0m\n");
+        else printf("\t> Switch Board Color\n");
+        printf("\033[2K");
+        if(curr_row == 2) printf("\033[100m\t>> Language \033[0m\n");
+        else printf("\t> Language\n");
+        char menu = _getch();
+        switch (menu)
+        {
+        case 's':
+            curr_row = curr_row+1 <= MENU_MAX_LENGTH ? ++curr_row : curr_row;
+            break;
+        
+        case 'w':
+            curr_row = curr_row-1 >= MENU_MIN_LENGTH ? --curr_row : curr_row;
+            break;
+        case 3:
+            menu_end = true;
+            break;
+        case 13:
+            if(curr_row == 1){
+                bool next_menu = false;
+                
+                while(!next_menu){
+                    printf("\033[7;1H");
+                    printf("\033[0J");
+                    switch(table_skins){
+                        case 1: 
+                            printf("\t\t\t\t\t << Blue Themed >>\n");
+                            break;
+                        case 2:
+                            printf("\t\t\t\t\t   << Classic >>\n");
+                            break;
+                        default:
+                            printf("\t\t\t\t\t     << Base >>\n");
+                            break;
+                    }
+                    PrintTable(table,print_moves);
+                    char menu2 = _getch();
+                    switch (menu2)
+                    {
+                        case 3:
+                            next_menu = true;
+                            break;
+                        case 13:
+                            //enter
+                            next_menu = true;
+                            break;
+                        case 'd':
+                            table_skins = table_skins == 2 ? 0 : ++table_skins; 
+                            SwitchSkins(table_skins);
+                            break;
+                        case 'a':
+                            table_skins = table_skins == 0 ? 2 : --table_skins; 
+                            SwitchSkins(table_skins);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                printf("\033[7;1H");
+                printf("\033[0J");
+                break;
+            }
+            menu_end = true;
+            break;
+        default:
+            break;
+        }
+    }
+    printf("\033[?25h");
+    game(table);
     return 0;
 }
