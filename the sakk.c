@@ -165,9 +165,10 @@ int white_queen_count = 0;
 int black_queen_count = 0;
 bool enPassant = false;
 bool IsCheck(char type, int sor, int oszlop, int king[2], Piece table[HEIGHT][WIDTH]){
-    if(abs(sor - king[0]) == abs(oszlop - king[1])){
+    printf("\nPiece:%d:%d King:%d:%d\n",sor,oszlop,king[0],king[1]);
+    if(abs(sor - king[0]) == abs(oszlop - king[1]) && (type == 'B' || type == 'Q')){
         return isPieceBetween(type,2,sor,oszlop,king[0],king[1],table);
-    } else if(sor == king[0] || oszlop == king[1]){
+    } else if((sor == king[0] || oszlop == king[1]) && (type == 'R' || type == 'Q')){
         int melyik_mezo = sor == king[0] ? 1 : 0;
         return isPieceBetween(type,melyik_mezo,sor,oszlop,king[0],king[1],table);
     }
@@ -809,7 +810,6 @@ bool IsKnightCheck(Piece table[HEIGHT][WIDTH], PieceColor opposite, int sor, int
 int EnPassant(int from_column, int row, int column, PiecePlace last_double_move, PieceColor turn, Piece table[HEIGHT][WIDTH], bool check, bool takes){
     int add = turn == WHITE ? 1 : -1;
     enPassant = true;
-    printf("\nPiece: %d:%d\n",row,column);
     if(last_double_move.piece != EMPTY && last_double_move.row == (row+add) && last_double_move.column == column)
     {   
         RemovePieceFromDepth(row+add, column, turn == WHITE ? check_depth_white : check_depth_black, table);
@@ -974,11 +974,8 @@ int PawnTakes(char lepes[MOVE_MAX_LENGTH], Piece table[HEIGHT][WIDTH], PieceColo
                     return 1;
                 }
             }
-            printf("\nin1\n");
             RemoveType(table,sor,oszlop,turn);
-            printf("in2\n");
             RemovePieceFromDepth(sor, oszlop, turn == WHITE ? check_depth_white : check_depth_black, table);
-            printf("in3\n");
             if(promote){
                 if(strlen(lepes) < 4){
                     printf("Nem adtad meg mivé promotoljon!\n");
@@ -2158,6 +2155,23 @@ void clearLastDoubleMove(PiecePlace* last_double_move){
     (*last_double_move).row = -1;
     (*last_double_move).column = -1;
 }
+void SwitchSkins(int num){
+    switch (num)
+    {   
+        case 1:
+            black_tile = BLACK_TILE_CLASSIC;
+            white_tile = WHITE_TILE_CLASSIC;
+            break;     
+        case 2:
+            black_tile = BLACK_TILE_BLUE;
+            white_tile = WHITE_TILE_BLUE;
+            break;          
+        default:
+            black_tile = BLACK_TILE_BASE;
+            white_tile = WHITE_TILE_BASE;
+            break;
+    }
+}
 int game(Piece table[HEIGHT][WIDTH]){
 
     char(*moves)[MOVE_MAX_LENGTH] = malloc(sizeof(*moves) * 20);
@@ -2356,23 +2370,6 @@ int game(Piece table[HEIGHT][WIDTH]){
         freeAllPieceList(temp_white);
         freeAllPieceList(temp_black);
         OldPrintTableForTest(table,print_moves);
-    }
-}
-void SwitchSkins(int num){
-    switch (num)
-    {   
-        case 1:
-            black_tile = BLACK_TILE_CLASSIC;
-            white_tile = WHITE_TILE_CLASSIC;
-            break;     
-        case 2:
-            black_tile = BLACK_TILE_BLUE;
-            white_tile = WHITE_TILE_BLUE;
-            break;          
-        default:
-            black_tile = BLACK_TILE_BASE;
-            white_tile = WHITE_TILE_BASE;
-            break;
     }
 }
 int main(){
