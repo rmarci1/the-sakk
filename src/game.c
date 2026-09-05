@@ -1,4 +1,90 @@
 #include "game.h"
+
+#ifdef _WIN32
+    char getch_new(void)
+    {
+        return _getch();
+    }
+#else
+    char getch_new(void)
+    {
+        struct termios oldt, newt;
+        char ch;
+
+        tcgetattr(STDIN_FILENO, &oldt);
+
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON | ECHO);
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+        ch = getchar();
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+        return ch;
+    }
+
+#endif
+int* p_wbishopcount;
+int* p_bbishopcount;
+int* p_wrookcount;
+int* p_brookcount;
+int* p_wqueencount;
+int* p_bqueencount;
+
+int white_bishops[PIECE_MAX_COUNT][2];
+int black_bishops[PIECE_MAX_COUNT][2];
+
+int white_rooks[PIECE_MAX_COUNT][2];
+int black_rooks[PIECE_MAX_COUNT][2];
+
+int white_queens[PIECE_MAX_COUNT-1][2];
+int black_queens[PIECE_MAX_COUNT-1][2];
+
+int white_king[2];
+int black_king[2];
+
+int (*p_white_bishops)[PIECE_MAX_COUNT][2];
+int (*p_black_bishops)[PIECE_MAX_COUNT][2];
+
+int (*p_white_rooks)[PIECE_MAX_COUNT][2];
+int (*p_black_rooks)[PIECE_MAX_COUNT][2];
+
+int (*p_white_queens)[PIECE_MAX_COUNT-1][2];
+int (*p_black_queens)[PIECE_MAX_COUNT-1][2];
+
+PrintMove print_moves;
+
+char* black_tile;
+char* white_tile;
+
+PieceList check_depth_white[HEIGHT][WIDTH] = {0};
+PieceList check_depth_black[HEIGHT][WIDTH] = {0};
+
+PieceList black_pawn_moves[HEIGHT][WIDTH];
+PieceList white_pawn_moves[HEIGHT][WIDTH];
+
+PiecePlace checkingPiece;
+Piece empty;
+PiecePlace nothing;
+
+bool double_check = false;
+
+int white_bishop_count = 0;
+int black_bishop_count = 0;
+int white_rook_count = 0;
+int black_rook_count = 0;
+int white_queen_count = 0;
+int black_queen_count = 0;
+
+Location from_move;
+Location to_move;
+
+bool black_king_inCheck = false;
+bool white_king_inCheck = false;
+bool enPassant = false;
+
 void Initialize(Piece table[HEIGHT][WIDTH])
 {
     p_wbishopcount = &white_bishop_count;
@@ -7,6 +93,12 @@ void Initialize(Piece table[HEIGHT][WIDTH])
     p_brookcount = &black_rook_count;
     p_wqueencount = &white_queen_count;
     p_bqueencount = &black_queen_count;
+    p_white_bishops = &white_bishops;
+    p_black_bishops = &black_bishops;
+    p_white_rooks = &white_rooks;
+    p_black_rooks = &black_rooks;
+    p_white_queens = &white_queens;
+    p_black_queens = &black_queens;
     nothing.piece = EMPTY;
     nothing.row = -1;
     nothing.column = -1;
@@ -72,7 +164,7 @@ void Initialize(Piece table[HEIGHT][WIDTH])
     for (int i = 0; i < HEIGHT; i++)
     {
         for (int y = 0; y < WIDTH; y++){
-            CheckPlace(table[i][y], i, y, table[i][y].color == WHITE ? check_depth_black : check_depth_white, table, FALSE);
+            CheckPlace(table[i][y], i, y, table[i][y].color == WHITE ? check_depth_black : check_depth_white, table, false);
         }
     }
 }
@@ -159,7 +251,17 @@ void clearLastDoubleMove(PiecePlace* last_double_move){
     (*last_double_move).row = -1;
     (*last_double_move).column = -1;
 }
-
+void CleanDepthList(PieceList temp_white[HEIGHT][WIDTH], PieceList temp_black[HEIGHT][WIDTH], bool white_king_inCheck_temp, 
+    bool black_king_inCheck_temp, PiecePlace* last_double_move, PiecePlace last_double_move_temp, Location temp_from_move, Location temp_to_move, bool temp_double_check){
+    piece_list_copy(check_depth_white,temp_white);
+    piece_list_copy(check_depth_black,temp_black);
+    white_king_inCheck = white_king_inCheck_temp;
+    black_king_inCheck = black_king_inCheck_temp;
+    *last_double_move = last_double_move_temp;
+    from_move = temp_from_move;
+    to_move = temp_to_move;
+    double_check = temp_double_check;
+}
 int game(Piece table[HEIGHT][WIDTH]){
 
     char(*moves)[MOVE_MAX_LENGTH] = malloc(sizeof(*moves) * 20);

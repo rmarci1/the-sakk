@@ -15,16 +15,20 @@ add_compile_options(
     -Wpedantic
 )
 
-add_executable(sakk
+add_executable(chess
     src/main.c
     src/board.c
     src/game.c
-    src/pieces.c
-    src/input.c
+    src/piece.c
+    src/ui.c
     src/move.c
+    src/list.c
 )
 
-target_include_directories(sakk
+target_include_directories(chess
     PRIVATE
         ${PROJECT_SOURCE_DIR}/include
+)
+set_target_properties(chess PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}"
 )

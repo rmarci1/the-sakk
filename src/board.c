@@ -239,7 +239,7 @@ int ChangingTablePositions(Piece table[HEIGHT][WIDTH], int from_row, int from_co
         printf("Sakkban lennél!");
         return 1;
     }
-    if(CheckPlace(table[from_row][from_col], from_row, from_col, table[from_row][from_col].color == WHITE ? check_depth_black : check_depth_white, table, TRUE) == 1) return 1;
+    if(CheckPlace(table[from_row][from_col], from_row, from_col, table[from_row][from_col].color == WHITE ? check_depth_black : check_depth_white, table, true) == 1) return 1;
     if(CheckWhenPieceMoves(from_row, from_col, row, col, table, check, isCheck, turn, takes) == 1) return 1;
     if(table[from_row][from_col].type == PAWN){
         if(CheckPawnMoves(turn, turn == WHITE ? black_pawn_moves : white_pawn_moves, from_row, from_col, true, table) == 1){
@@ -251,7 +251,7 @@ int ChangingTablePositions(Piece table[HEIGHT][WIDTH], int from_row, int from_co
     }
     table[row][col] = table[from_row][from_col];
     table[from_row][from_col] = empty;
-    if(CheckPlace(table[row][col], row, col, table[row][col].color == WHITE ? check_depth_black : check_depth_white, table, FALSE) == 1) return 1;
+    if(CheckPlace(table[row][col], row, col, table[row][col].color == WHITE ? check_depth_black : check_depth_white, table, false) == 1) return 1;
     if(CheckWhenPieceMoves(row, col, -1, -1, table, check, isCheck, turn, takes) == 1) return 1;
     if(CheckWhichPawnAffects(white_pawn_moves, from_row, from_col, row, col, BLACK, table, true, last_double_move, turn, takes, is_pawn_taken, PAWN) || 
     CheckWhichPawnAffects(black_pawn_moves, from_row, from_col, row, col, WHITE, table, true, last_double_move, turn, takes, is_pawn_taken, PAWN) == 1) return 1;
@@ -309,7 +309,7 @@ int ChangingKingInCheck(Piece table[HEIGHT][WIDTH], bool isCheck, int check, boo
     }
     return 0;
 }
-int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIGHT][WIDTH], Piece table[HEIGHT][WIDTH], Bool remove){  
+int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIGHT][WIDTH], Piece table[HEIGHT][WIDTH], bool remove){  
     // megnézi melyik területetek látja a bábu és a remove paraméter szerint törli vagy egészíti ki a látóterét
     switch (piece_type.type)
     {
@@ -323,7 +323,7 @@ int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIG
                     add.row = sor;
                     add.column = oszlop;
                     add.piece = KNIGHT;
-                    if(remove == FALSE) addPiece(&check_depth[indulas[0]][indulas[1]], add);
+                    if(!remove) addPiece(&check_depth[indulas[0]][indulas[1]], add);
                     else removePiece(&check_depth[indulas[0]][indulas[1]],add);  
                 }
                 if(i<4 && i%2 == 1){
@@ -360,7 +360,7 @@ int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIG
                         add.row = sor;
                         add.column = oszlop;
                         add.piece = piece_type.type;
-                        if(remove == FALSE) addPiece(&check_depth[curr_sor][curr_oszlop],add);
+                        if(!remove) addPiece(&check_depth[curr_sor][curr_oszlop],add);
                         else removePiece(&check_depth[curr_sor][curr_oszlop],add);                   
                     }
                 }             
@@ -373,12 +373,12 @@ int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIG
             add.piece = PAWN;
             if(oszlop-1>=0){
                 add.column = oszlop-1;
-                if(remove == FALSE) addPiece(&check_depth[curr_row][oszlop-1], add);
+                if(!remove) addPiece(&check_depth[curr_row][oszlop-1], add);
                 else removePiece(&check_depth[curr_row][oszlop-1],add); 
             }
             if(oszlop+1<=7){
                 add.column = oszlop+1;
-                if(remove == FALSE) addPiece(&check_depth[curr_row][oszlop+1], add);
+                if(!remove) addPiece(&check_depth[curr_row][oszlop+1], add);
                 else removePiece(&check_depth[curr_row][oszlop+1],add); 
             }
             return 0;
@@ -418,7 +418,7 @@ int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIG
             add.row = sor;
             add.column = oszlop;
             add.piece = piece_type.type;
-            if(remove == FALSE) addPiece(&check_depth[curr_sor][curr_oszlop],add);
+            if(!remove) addPiece(&check_depth[curr_sor][curr_oszlop],add);
             else removePiece(&check_depth[curr_sor][curr_oszlop],add);
         }
         if(curr_sor <= 7 && curr_sor >= 0 && curr_oszlop <= 7 && curr_oszlop >= 0){
@@ -426,14 +426,14 @@ int CheckPlace(Piece piece_type, int sor, int oszlop, PieceList check_depth[HEIG
             add.row = sor;
             add.column = oszlop;
             add.piece = piece_type.type;
-            if(remove == FALSE) addPiece(&check_depth[curr_sor][curr_oszlop],add);
+            if(!remove) addPiece(&check_depth[curr_sor][curr_oszlop],add);
             else removePiece(&check_depth[curr_sor][curr_oszlop],add);
         }
     }
     return 0;
 }
 void RemovePieceFromDepth(int sor, int oszlop, PieceList depth[HEIGHT][WIDTH], Piece table[HEIGHT][WIDTH]){
-    CheckPlace(table[sor][oszlop], sor, oszlop, depth, table, TRUE);
+    CheckPlace(table[sor][oszlop], sor, oszlop, depth, table, true);
 }
 Piece PieceinDirection(Piece table[HEIGHT][WIDTH], int from_row, int from_col, int row, int col){
     // 0:row 1:col 2:diagonal
@@ -466,4 +466,159 @@ bool CanBlock(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], 
     }
     table[row][col] = temp;
     return true;
+}
+int CheckPawnMoves(PieceColor turn, PieceList pawn_moves[HEIGHT][WIDTH], int row, int column, bool remove, Piece table[HEIGHT][WIDTH]){ 
+    PiecePlace pawn;
+    pawn.row = row;
+    pawn.column = column;
+    pawn.piece = PAWN; 
+    PieceColor opposite = turn == WHITE ? BLACK : WHITE;
+    bool two_moves = false;
+    if(turn == WHITE){
+        if(row == 6){
+            if(!remove){
+                addPiece(&pawn_moves[row-1][column], pawn);
+                addPiece(&pawn_moves[row-2][column], pawn);
+            } else{
+                removePiece(&pawn_moves[row-1][column], pawn);
+                removePiece(&pawn_moves[row-2][column], pawn);
+            }
+            two_moves = true;
+        }
+    }
+    else{
+        if(row == 1){
+            if(!remove){
+                addPiece(&pawn_moves[row+1][column], pawn);
+                addPiece(&pawn_moves[row+2][column], pawn);
+            } else{
+                removePiece(&pawn_moves[row+1][column], pawn);
+                removePiece(&pawn_moves[row+2][column], pawn);
+            }
+            two_moves = true;
+        }
+    }
+    int add = turn == WHITE ? -1 : 1;
+    if(row+add >= 0 && row+add <= 7 && table[row+add][column].type == EMPTY && !two_moves){
+        if(!remove){
+            addPiece(&pawn_moves[row+add][column], pawn);
+        } else{
+            removePiece(&pawn_moves[row+add][column], pawn);
+        }
+    }
+    if(row+add >= 0 && row+add <= 7 && column+1 >= 0 && column + 1 < 8 && table[row+add][column+1].type != EMPTY && table[row+add][column+1].color == opposite){
+        if(remove){
+            removePiece(&pawn_moves[row+add][column + 1], pawn);
+        } else{
+            addPiece(&pawn_moves[row+add][column + 1],pawn);
+        }
+    }
+    if(row+add >= 0 && row+add <= 7 && column+1 >= 0 && column + 1 < 8 && table[row+add][column-1].type != EMPTY && table[row+add][column-1].color == opposite){
+        if(remove){
+            removePiece(&pawn_moves[row+add][column-1], pawn);
+        } else {
+            addPiece(&pawn_moves[row+add][column-1],pawn);
+        }
+    }
+    return 0;
+}
+int CheckPawnTypes(PieceList pawn_moves[HEIGHT][WIDTH], int row, int column, int add, Piece table[HEIGHT][WIDTH], PiecePlace pawn, 
+    PieceColor opposite){
+    // Megnézi hogy milyen gyalog lépés típusokra adjon a pawn_moves listához; 
+    if(table[row+(add*-1)][column+1].type == PAWN && table[row+(add*-1)][column+1].color == opposite){
+        pawn.row = row+add*-1;
+        pawn.column = column+1;
+        addPiece(&pawn_moves[row][column], pawn);
+    }
+    if(table[row+(add*-1)][column-1].type == PAWN && table[row+(add*-1)][column-1].color == opposite){
+        pawn.row = row+add*-1;
+        pawn.column = column-1;
+        addPiece(&pawn_moves[row][column], pawn);
+    }
+    return 0;
+}
+int CheckPawnRows(Piece table[HEIGHT][WIDTH], PiecePlace pawn, int from_row, int from_column, int to_row, int to_column, int add, PieceColor curr){
+    if(table[from_row+add][from_column].color == BLACK && curr == WHITE){
+        pawn.row = from_row+add;
+        pawn.column = from_column;
+        addPiece(&white_pawn_moves[from_row][from_column],pawn);
+        if((pawn.row == 1 || pawn.row == 6) && table[from_row+add*-1][from_column].type == EMPTY && (to_row != from_row+add*-1 || to_column != from_column)){
+            addPiece(&white_pawn_moves[from_row+add*-1][from_column], pawn); 
+        }
+    }
+    if(table[from_row+add][from_column].color == WHITE && curr == BLACK){
+        pawn.row = from_row+add;
+        pawn.column = from_column;
+        addPiece(&black_pawn_moves[from_row][from_column],pawn);
+        if((pawn.row == 1 || pawn.row == 6) && table[from_row+add*-1][from_column].type == EMPTY && (to_row != from_row+add*-1 || to_column != from_column)){
+            addPiece(&black_pawn_moves[from_row+add*-1][from_column],pawn); 
+        }
+    }
+    return 0;
+}
+int CheckWhichPawnAffects(PieceList pawn_moves[HEIGHT][WIDTH], int from_row, int from_column, int to_row, int to_column, PieceColor curr,
+    Piece table[HEIGHT][WIDTH], bool pawn_move, PiecePlace last_double_move, PieceColor turn, bool takes, bool is_pawn_taken, PieceType moveType){
+    while(pawn_moves[from_row][from_column].size > 0){
+        removePiece(&pawn_moves[from_row][from_column], pawn_moves[from_row][from_column].items[0]);
+    }
+    while(pawn_moves[to_row][to_column].size > 0){
+        removePiece(&pawn_moves[to_row][to_column], pawn_moves[to_row][to_column].items[0]);
+    }
+    PieceColor opposite = turn == WHITE ? BLACK : WHITE;
+    if(takes && is_pawn_taken && turn != curr){
+        Piece temp;
+        temp.color = turn;
+        temp.type = moveType;
+        int addTo = turn == WHITE ? 1 : -1; 
+        int actual_to_row = enPassant ? to_row + addTo : to_row;
+        table[from_row][from_column] = temp;
+        CheckPawnMoves(opposite, pawn_moves, actual_to_row, to_column, true, table);
+        table[from_row][from_column] = empty;
+    }
+    int add = curr == WHITE ? -1 : 1;
+    PiecePlace pawn;
+    pawn.piece = PAWN;
+    if(!(takes && is_pawn_taken && turn != curr) && !takes){
+        if(to_row+add*-1 == 1 && curr == BLACK && !pawn_move && table[to_row+add*-1][to_column].type == PAWN && table[to_row+add*-1][to_column].color == WHITE){
+            printf("inremove1\n");
+            removePiece(&pawn_moves[to_row+1][to_column], pawn_moves[to_row+1][to_column].items[0]);
+        }
+        else if(to_row+add*-1 == 6 && curr == WHITE && !pawn_move && table[to_row+add*-1][to_column].type == PAWN && table[to_row+add*-1][to_column].color == BLACK){
+            printf("inremove2\n");
+            removePiece(&pawn_moves[to_row-1][to_column], pawn_moves[to_row-1][to_column].items[0]);
+        }
+    }
+    
+
+    //printf("row: %d, opposite: %s \n",from_row+add,opposite == WHITE ? "white" : "black");
+    if(curr == WHITE){
+        if (table[from_row+1][from_column].type == PAWN)
+        {
+           CheckPawnRows(table,pawn,from_row,from_column,to_row,to_column,1,BLACK);
+        }    
+        if (table[from_row-1][from_column].type == PAWN)
+        {
+           CheckPawnRows(table,pawn,from_row,from_column,to_row,to_column,-1,WHITE);
+        }    
+    }
+    if(table[from_row+add*-2][from_column].type == PAWN && table[from_row+add*-1][from_column].type == EMPTY && (from_row+add*-2 == 1 || from_row+add*-2 == 6) && table[from_row+add*-2][from_column].color == opposite){
+        pawn.row = from_row+add*-2;
+        pawn.column = from_column;
+        addPiece(&pawn_moves[from_row][from_column],pawn);
+    }
+    //CheckPawnTypes(pawn_moves, from_row, from_column, add, table, pawn, opposite, true);
+    CheckPawnTypes(pawn_moves, to_row, to_column, add, table, pawn, opposite);
+    if(last_double_move.piece != EMPTY && table[last_double_move.row][last_double_move.column+1].type == PAWN 
+        && table[last_double_move.row][last_double_move.column+1].color == opposite){
+        pawn.row = last_double_move.row;
+        pawn.column = last_double_move.column+1;
+        addPiece(&pawn_moves[last_double_move.row+add][last_double_move.column], pawn);
+    }
+    if(last_double_move.piece != EMPTY && table[last_double_move.row][last_double_move.column-1].type == PAWN 
+        && table[last_double_move.row][last_double_move.column-1].color == opposite){
+        pawn.row = last_double_move.row;
+        pawn.column = last_double_move.column-1;
+        addPiece(&pawn_moves[last_double_move.row+add][last_double_move.column], pawn);
+    }
+    return 0;
 }

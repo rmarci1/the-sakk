@@ -44,3 +44,11 @@ char* getPiece(PieceColor color, PieceType type){
             return "  ";
     }
 }
+void ChangingFromMovePosition(int row, int col){
+    from_move.row = row;
+    from_move.col = col;
+}
+void ChangingToMovePosition(int row, int col){
+    to_move.row = row;
+    to_move.col = col;
+}

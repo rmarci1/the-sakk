@@ -1,16 +1,15 @@
-#ifndef MOVE.H
+#ifndef MOVE_H
+#define MOVE_H
     
+    #include "imports.h"
+    #include "piece.h"
+    #include "config.h"
     #include "board.h"
-    #define MOVE_MAX_LENGTH 20
-    
+    #include "types.h"
     typedef struct {
         int current_turn;
         char move[MOVE_MAX_LENGTH];
     } Move;
-    
-    Location from_move;
-    Location to_move;
-    bool enPassant = false;
 
     int PawnMove(char[MOVE_MAX_LENGTH], int[2], bool*, Piece[HEIGHT][WIDTH], 
         PieceColor, bool, bool, PiecePlace*, bool*);
@@ -31,14 +30,6 @@
     int Castle(int[2], int[2], Piece[HEIGHT][WIDTH], PieceColor, bool*, bool,
         bool, bool, int, int, Piece, 
         int[PIECE_MAX_COUNT][2], int, bool, PieceList[HEIGHT][WIDTH], bool, bool*);
-    int CheckPawnMoves(PieceColor, PieceList[HEIGHT][WIDTH], int, int, bool, Piece[HEIGHT][WIDTH]);
-    int CheckPawnTypes(PieceList[HEIGHT][WIDTH], int, int, int, Piece[HEIGHT][WIDTH], PiecePlace, 
-    PieceColor);
-    int CheckPawnRows(Piece[HEIGHT][WIDTH], PiecePlace, int, int, int, int, int, PieceColor);
-    int CheckWhichPawnAffects(PieceList[HEIGHT][WIDTH], int, int, int, int, PieceColor,
-    Piece[HEIGHT][WIDTH], bool, PiecePlace, PieceColor, bool, bool, PieceType);
-    void ChangingFromMovePosition(int, int);
-    void ChangingToMovePosition(int, int);
     int IsMoveWrong(Piece[HEIGHT][WIDTH], bool, int, int, PieceColor, int);
     int ChangeRookPosition(int, int, int, int, int, int[PIECE_MAX_COUNT][2]);
     int isPieceFoundCorrect(Piece[HEIGHT][WIDTH], int*, int, int, int, int, bool, 

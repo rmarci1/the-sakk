@@ -22,17 +22,13 @@ void addPiece(PieceList* list, PiecePlace piece){
     //printf("Added, size: %d\n",list->size);
 }
 void removePiece(PieceList* list,PiecePlace piece){ 
-    Bool found = FALSE;
-    //printf("---\n");
-    //printf("new: %d \n",list->size);
-    //printf("removing: %d:%d\n",piece.row,piece.column);
+    bool found = false;
     for (int i = 0; i < list->size; i++)
     {       
-        //printf("%d\n",i);
-        if(found == FALSE && list->items[i].column==piece.column && list->items[i].row==piece.row && list->items[i].piece==piece.piece){
-            found=TRUE;
+        if(!found && list->items[i].column==piece.column && list->items[i].row==piece.row && list->items[i].piece==piece.piece){
+            found=true;
         }
-        if(found == TRUE){
+        if(found){
             list->items[i]=list->items[i+1];
         }
     }
@@ -126,15 +122,4 @@ int RemoveType(Piece table[HEIGHT][WIDTH], int sor, int oszlop, PieceColor turn)
         }
     }
     return 0;
-}
-void CleanDepthList(PieceList temp_white[HEIGHT][WIDTH], PieceList temp_black[HEIGHT][WIDTH], bool white_king_inCheck_temp, 
-    bool black_king_inCheck_temp, PiecePlace* last_double_move, PiecePlace last_double_move_temp, Location temp_from_move, Location temp_to_move, bool temp_double_check){
-    piece_list_copy(check_depth_white,temp_white);
-    piece_list_copy(check_depth_black,temp_black);
-    white_king_inCheck = white_king_inCheck_temp;
-    black_king_inCheck = black_king_inCheck_temp;
-    *last_double_move = last_double_move_temp;
-    from_move = temp_from_move;
-    to_move = temp_to_move;
-    double_check = temp_double_check;
 }

@@ -1,6 +1,7 @@
 #ifndef PIECE_H
-    #include <stdbool.h>
-
+#define PIECE_H
+    #include "imports.h"
+    #include "types.h"
     typedef enum{
         KING,
         QUEEN,
@@ -19,28 +20,24 @@
         PieceType type;
         PieceColor color;
     } Piece;
+     typedef struct {
+        int row;
+        int column;
+        PieceType piece;
+    } PiecePlace;
     typedef struct {
         PiecePlace* items;
         int size;
         int capacity;
     } PieceList;
-    
-    bool black_king_inCheck = false;
-    bool white_king_inCheck = false;
-    int white_bishop_count = 0;
-    int black_bishop_count = 0;
-    int white_rook_count = 0;
-    int black_rook_count = 0;
-    int white_queen_count = 0;
-    int black_queen_count = 0;
-    int* p_wbishopcount = NULL;
-    int* p_bbishopcount = NULL;
-    int* p_wrookcount = NULL;
-    int* p_brookcount = NULL;
-    int* p_wqueencount = NULL;
-    int* p_bqueencount = NULL;
-    
+    extern Location from_move;
+    extern Location to_move;
+    extern bool black_king_inCheck;
+    extern bool white_king_inCheck;
+    extern bool enPassant;
     char* getPiece(PieceColor, PieceType);
     PieceType setType(int, int);
+    void ChangingFromMovePosition(int, int);
+    void ChangingToMovePosition(int, int);
 
 #endif
