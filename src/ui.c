@@ -34,7 +34,7 @@ void PrintTable(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                 printf("\033[%sm %s \033[0m",black_tile,t);
             }
         }
-        printf(" %d ", i+1);
+        printf(" %d ", 8-i);
         if((i+1)*2 <= print_move.length){
             //printf("%d:d",print_move.curr_position);
             if(print_move.moves[(i+1)*2-1].current_turn-((print_move.moves[(i+1)*2-1].current_turn-1)/8*8) == (print_move.curr_position+1)/2){

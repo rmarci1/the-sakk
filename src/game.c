@@ -172,7 +172,6 @@ bool IsDepthNotPawnOrKing(PiecePlace* check_depth_row, int size, Piece table[HEI
     if(size <= 0) return false;
     for (int i = 0; i < size; i++)
     {   
-        printf("\nsize:%d\n",i);
         if((check_depth_row[i].piece != PAWN && check_depth_row[i].piece != KING) || is_pawn_depth){
             //printf("\nPiece: %s\n",getPiece(WHITE,check_depth[i].piece));
             int row = check_depth_row[i].row;
@@ -349,7 +348,6 @@ int game(Piece table[HEIGHT][WIDTH]){
         else{
             int length = strlen(lepes);
             int sor = 8 - (length == 3 ? (lepes[2]-'0') : length == 4 ? (lepes[3] - '0') : (lepes[4] - '0'));
-            printf("\nsor:%d\n",sor);
             int oszlop = length == 3 ? lepes[1] - 'a' : length == 4 ? lepes[2] - 'a' : lepes[3] - 'a';
             if(lepes[0] == 'N'){
                 if(KnightMove(lepes, turn == WHITE ? black_king : white_king, turn == WHITE ? &black_king_inCheck : &white_king_inCheck, table, turn, takes, check, sor, oszlop, length) == 0){
@@ -467,4 +465,5 @@ int game(Piece table[HEIGHT][WIDTH]){
         freeAllPieceList(temp_black);
         PrintTable(table,print_moves);
     }
+    return 0;
 }

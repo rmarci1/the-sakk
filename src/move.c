@@ -30,7 +30,6 @@ int PawnMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, Piece
     }
     int oszlop = lepes[0] - 'a';
     int sor = 8 - (lepes[1]-'0');
-    printf("\nsor: %d\n",sor);
     if(sor == 7 || sor == 0){
         printf("Nem adtad meg mivé promotoljon!\n");
         return 1;
@@ -76,7 +75,7 @@ int PawnTakes(char lepes[MOVE_MAX_LENGTH], Piece table[HEIGHT][WIDTH], PieceColo
 {       
     int honnan_oszlop = lepes[0] - 'a';
     int oszlop = lepes[1] - 'a';
-    int sor = lepes[2]-'0'-1;
+    int sor = 8 - (lepes[2]-'0');
     if((sor == 7 || sor == 0 ) && !promote){
         printf("Nem adtad meg mivé promotoljon!\n");
         return 1;
