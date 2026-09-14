@@ -110,7 +110,7 @@ int PawnTakes(char lepes[MOVE_MAX_LENGTH], Piece table[HEIGHT][WIDTH], PieceColo
             if(ChangingKingInCheck(table,isCheck,check,king_inCheck,sor,oszlop,turn) == 1) return 1;
             return 0;
         }
-        else if(EnPassant(honnan_oszlop, sor, oszlop, last_double_move, turn, table, check, takes) == 0){
+        else if(EnPassant(honnan_oszlop, sor, oszlop, last_double_move, turn, table, check, takes, king) == 0){
             return 0;
         }
         else{
@@ -145,7 +145,7 @@ int PawnTakes(char lepes[MOVE_MAX_LENGTH], Piece table[HEIGHT][WIDTH], PieceColo
             if(ChangingKingInCheck(table,isCheck,check,king_inCheck,sor,oszlop,turn) == 1) return 1;
             return 0;
         }
-        else if(EnPassant(honnan_oszlop, sor, oszlop, last_double_move, turn, table, check, takes) == 0){
+        else if(EnPassant(honnan_oszlop, sor, oszlop, last_double_move, turn, table, check, takes, king) == 0){
             return 0;
         }
         else{
@@ -154,16 +154,25 @@ int PawnTakes(char lepes[MOVE_MAX_LENGTH], Piece table[HEIGHT][WIDTH], PieceColo
         }
     }
 }
-int EnPassant(int from_column, int row, int column, PiecePlace last_double_move, PieceColor turn, Piece table[HEIGHT][WIDTH], bool check, bool takes){
+int EnPassant(int from_column, int row, int column, PiecePlace last_double_move, PieceColor turn, Piece table[HEIGHT][WIDTH], bool check, bool takes, int king[2]){
     int add = turn == WHITE ? 1 : -1;
     enPassant = true;
+    bool isCheck = false;
+    if(turn==WHITE && king[0]-row == -1 && abs(king[1]-column) == 1){
+        printf("true?\n");
+        isCheck = true;
+    }
+    else if(king[0]-row == 1 && abs(king[1]-column) == 1){
+        printf("true?\n");
+        isCheck = true;
+    }
     if(last_double_move.piece != EMPTY && last_double_move.row == (row+add) && last_double_move.column == column)
     {   
         RemovePieceFromDepth(row+add, column, turn == WHITE ? check_depth_white : check_depth_black, table);
         if(CheckPlace(table[row+add][from_column], row+add, from_column, table[row+add][from_column].color == WHITE ? check_depth_black : check_depth_white, table, true) == 1){
             return 1;
         }
-        if(CheckWhenPieceMoves(row+add, from_column, row, column, table, check, true, turn, takes) == 1){
+        if(CheckWhenPieceMoves(row+add, from_column, row, column, table, check, isCheck, turn, takes) == 1){
             return 1;
         }
         if(CheckPawnMoves(turn, turn == WHITE ? black_pawn_moves : white_pawn_moves, row+add, from_column, true, table) == 1){
@@ -178,7 +187,7 @@ int EnPassant(int from_column, int row, int column, PiecePlace last_double_move,
         if(CheckPlace(table[row][column], row, column, table[row][column].color == WHITE ? check_depth_black : check_depth_white, table, false) == 1){
             return 1;
         }
-        if (CheckWhenPieceMoves(row, column, -1, -1, table, check, true, turn, takes) == 1){
+        if(CheckWhenPieceMoves(row, column, -1, -1, table, check, isCheck, turn, takes) == 1){
             return 1;
         }
         if(CheckWhichPawnAffects(white_pawn_moves, row+add, from_column, row, column, BLACK, table, true, last_double_move, turn, true, true, PAWN) || 

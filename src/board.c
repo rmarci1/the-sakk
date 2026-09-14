@@ -32,8 +32,6 @@ int CheckInstanceRook(int curr_row, int curr_column, int where_row, int where_co
     int melyik_mezo = list->items[i].row == curr_row ? 1 : 0;
     int add_row = curr_row > list->items[i].row ? 1 : -1;
     int add_column = curr_column > list->items[i].column ? 1 : -1;
-    printf("where: %d:%d\n",list->items[i].row,list->items[i].column);
-    printf("which: %d\n add_row:%d col:%d\n",melyik_mezo,add_row,add_column);
     do{
         if(melyik_mezo == 1){
             curr_column += add_column;
@@ -61,12 +59,9 @@ int CheckInstanceRook(int curr_row, int curr_column, int where_row, int where_co
             curr_row += add_row;
         }
         if(curr_row > 7 || curr_column > 7 || curr_row < 0 || curr_column < 0) break;
-        //printf("row: %d column: %d\n",curr_row,curr_column);
-        //printf("%s",to_column != -1 ? "add" :"remove");
         if(to_column != -1)addPiece(&check_depth[curr_row][curr_column], list->items[i]);
         else removePiece(&check_depth[curr_row][curr_column], list->items[i]);
     } while(curr_row <= 7 && curr_column <= 7 && curr_row >= 0 && curr_column >=0 && table[curr_row][curr_column].type == EMPTY);
-    //PrintTable(table);
     return 0;
 }
 int CheckInstances(int where_row, int where_column, int to_row, int to_column, PieceList check_depth[HEIGHT][WIDTH], 
@@ -231,6 +226,7 @@ int IsCheckEqualsToMove(bool isCheck, bool check){
     }
     else if(isCheck && !check){
         printf("Ez a lépés sakkot adna!\n");
+        printf("Here?\n");
         return 1;
     }
     return 0;

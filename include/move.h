@@ -15,7 +15,7 @@
         PieceColor, bool, bool, PiecePlace*, bool*);
     int PawnTakes(char[MOVE_MAX_LENGTH], Piece[HEIGHT][WIDTH], PieceColor, 
         bool, PiecePlace, bool, int[2], bool*, bool);
-    int EnPassant(int, int, int, PiecePlace, PieceColor, Piece[HEIGHT][WIDTH], bool, bool);
+    int EnPassant(int, int, int, PiecePlace, PieceColor, Piece[HEIGHT][WIDTH], bool, bool, int[2]);
     int Promote(int, int, int, char, Piece[HEIGHT][WIDTH], bool, PieceColor, bool, int[2], bool*);
     int KnightMove(char[MOVE_MAX_LENGTH], int[2], bool*, Piece[HEIGHT][WIDTH], PieceColor, bool, 
         bool, int, int, int);
