@@ -55,9 +55,11 @@ int PawnMove(char lepes[MOVE_MAX_LENGTH], int king[2], bool* king_inCheck, Piece
     }
     bool isCheck = false;
     if(turn==WHITE && king[0]-sor == -1 && abs(king[1]-oszlop) == 1){
+        printf("true?\n");
         isCheck = true;
     }
     else if(king[0]-sor == 1 && abs(king[1]-oszlop) == 1){
+        printf("true?\n");
         isCheck = true;
     }
     if(abs(hol_sor - sor) == 2){
@@ -697,7 +699,7 @@ int KingMove(char lepes[MOVE_MAX_LENGTH], int king[2], Piece table[HEIGHT][WIDTH
         return 1;
     }
     int oszlop = lepes[1] - 'a';
-    int sor = lepes[2]-'0'-1;
+    int sor = 8-(lepes[2]-'0');
     if(oszlop < 0 || sor < 0 || oszlop > 8 || sor > 8){
         printf("Nincs ilyen mező a pályán!\n");
         return 1;
@@ -709,12 +711,11 @@ int KingMove(char lepes[MOVE_MAX_LENGTH], int king[2], Piece table[HEIGHT][WIDTH
     }
     if(check_depth[sor][oszlop].size > 0){
         printf("Ott sakban lennél!\n");
-        printf("\nHere?\n");
+
         return 1;
     }
     else if(KingCheck(sor,oszlop,takes)){
         printf("Ott sakban lennél!\n");
-        printf("\nCheckingPiece: %d:%d\nPiece: %d:%d\nTakes: %s\n",checkingPiece.row,checkingPiece.column,sor,oszlop,takes ? "Yeah" : "Nay");
         return 1;
     }
     if(white_king_inCheck || black_king_inCheck){

@@ -67,7 +67,7 @@ void OldPrintTableForTest(Piece table[HEIGHT][WIDTH], PrintMove print_move){
     printf("\n");
     for (int i = 0; i < HEIGHT; ++i)
     {   
-        printf("%d ", i+1);
+        printf("%d ", 8-i);
         for (int y = 0; y < WIDTH; y++)
         {   
             char* t = getPiece(table[i][y].color,table[i][y].type);
@@ -83,25 +83,26 @@ void OldPrintTableForTest(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                 else {
                     printf("\033[100m %s \033[0m",t);
                 }*/
-                switch ( check_depth_black[i][y].size)
+                switch ( check_depth_white[i][y].size)
                 {
-                case 1:
-                    printf("\033[41m %s \033[0m",t);
-                    break;
-                case 2:
-                    printf("\033[42m %s \033[0m",t);
-                    break;
-                case 3:
-                    printf("\033[44m %s \033[0m",t);
-                    break;
-                case 4:
-                    printf("\033[45m %s \033[0m",t);
-                    break;
-                case 5:
-                    printf("\033[46m %s \033[0m",t);
-                    break;
-                default:
+                    case 1:
+                        printf("\033[41m %s \033[0m",t);
+                        break;
+                    case 2:
+                        printf("\033[42m %s \033[0m",t);
+                        break;
+                    case 3:
+                        printf("\033[44m %s \033[0m",t);
+                        break;
+                    case 4:
+                        printf("\033[45m %s \033[0m",t);
+                        break;
+                    case 5:
+                        printf("\033[46m %s \033[0m",t);
+                        break;
+                    default:
                         printf("\033[100m %s \033[0m",t);
+                        break;
                 }
             }
             else {
@@ -110,26 +111,27 @@ void OldPrintTableForTest(Piece table[HEIGHT][WIDTH], PrintMove print_move){
                 else {
                     printf("\033[40m %s \033[0m",t);
                 }*/
-                switch ( check_depth_black[i][y].size)
+                switch ( check_depth_white[i][y].size)
                 {
-                case 1:
-                    printf("\033[41m %s \033[0m",t);
-                    break;
-                case 2:
-                    printf("\033[42m %s \033[0m",t);
-                    break;
-                case 3:
-                    printf("\033[44m %s \033[0m",t);
-                    break;
-                case 4:
-                    printf("\033[45m %s \033[0m",t);
-                    break;
-                default:
-                    printf("\033[40m %s \033[0m",t);
+                    case 1:
+                        printf("\033[41m %s \033[0m",t);
+                        break;
+                    case 2:
+                        printf("\033[42m %s \033[0m",t);
+                        break;
+                    case 3:
+                        printf("\033[44m %s \033[0m",t);
+                        break;
+                    case 4:
+                        printf("\033[45m %s \033[0m",t);
+                        break;
+                    default:
+                        printf("\033[40m %s \033[0m",t);
+                        break;
                 }
             }
         }
-        printf(" %d ", i+1);
+        printf(" %d ", 8-i);
         printf("\n");
     }
     printf("  ");

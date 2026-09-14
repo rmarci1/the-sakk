@@ -32,9 +32,9 @@
     extern int white_queen_count;
     extern int black_queen_count;
 
-    int CheckInstanceBishop(int, int, int, int, int, int, PieceList*, 
+    int CheckInstanceBishop(int, int, int, int, int, int, int, PieceList*, 
     PieceList[HEIGHT][WIDTH], Piece[HEIGHT][WIDTH], PieceColor, bool, bool*);
-    int CheckInstanceRook(int, int, int, int, int, int, PieceList*, 
+    int CheckInstanceRook(int, int, int, int, int, int, int, PieceList*, 
     PieceList[HEIGHT][WIDTH], Piece[HEIGHT][WIDTH], PieceColor, bool, bool*);
     int CheckInstances(int, int, int, int, PieceList[HEIGHT][WIDTH], 
     Piece[HEIGHT][WIDTH], PieceColor, bool, bool*);

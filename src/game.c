@@ -282,7 +282,7 @@ int game(Piece table[HEIGHT][WIDTH]){
     int* p_lepesek = &lepesek_szama;
     PieceColor turn = WHITE;
     printf("\033[2J");
-    PrintTable(table,print_moves);
+    OldPrintTableForTest(table,print_moves);
     while (vege == 0)
     {   
         printf("\033[2K");
@@ -463,7 +463,7 @@ int game(Piece table[HEIGHT][WIDTH]){
         }
         freeAllPieceList(temp_white);
         freeAllPieceList(temp_black);
-        PrintTable(table,print_moves);
+        OldPrintTableForTest(table,print_moves);
     }
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "board.h"
-int CheckInstanceBishop(int curr_row, int curr_column, int where_row, int where_column, int to_row, int i, PieceList* list, 
+int CheckInstanceBishop(int curr_row, int curr_column, int where_row, int where_column, int to_row, int to_col, int i, PieceList* list, 
     PieceList check_depth[HEIGHT][WIDTH], Piece table[HEIGHT][WIDTH], PieceColor opposite_color, bool check, bool* isDiscoveredCheck){
     int add_row = curr_row > list->items[i].row ? 1 : -1;
     int add_column = curr_column > list->items[i].column ? 1 : -1;
@@ -8,8 +8,10 @@ int CheckInstanceBishop(int curr_row, int curr_column, int where_row, int where_
         curr_column += add_column;                  
     } while(table[curr_row][curr_column].type == EMPTY && curr_row < 7 && curr_column < 7 && curr_row > 0 && curr_column > 0);
     if(table[curr_row][curr_column].type == KING && table[curr_row][curr_column].color == opposite_color && !check){
-        printf("Ez a lépés sakkot adna!\n");
-        return 1;
+        if(to_row != -1 && (abs(list->items[i].row - to_row) == abs(list->items[i].column - to_col)) && (abs(to_row - curr_row) == abs(to_col - curr_column))){
+            printf("Ez a lépés sakkot adna!\n");
+            return 1;
+        }
     }
     else if(table[curr_row][curr_column].type == KING && table[curr_row][curr_column].color == opposite_color){
         *isDiscoveredCheck = true;
@@ -25,13 +27,13 @@ int CheckInstanceBishop(int curr_row, int curr_column, int where_row, int where_
     } while(table[curr_row][curr_column].type == EMPTY && curr_row < 7 && curr_column < 7 && curr_row > 0 && curr_column > 0);
     return 0;
 }
-int CheckInstanceRook(int curr_row, int curr_column, int where_row, int where_column, int to_column, int i, PieceList* list, 
+int CheckInstanceRook(int curr_row, int curr_column, int where_row, int where_column, int to_row, int to_column, int i, PieceList* list, 
     PieceList check_depth[HEIGHT][WIDTH], Piece table[HEIGHT][WIDTH], PieceColor opposite_color, bool check, bool* isDiscoveredCheck){
     int melyik_mezo = list->items[i].row == curr_row ? 1 : 0;
     int add_row = curr_row > list->items[i].row ? 1 : -1;
     int add_column = curr_column > list->items[i].column ? 1 : -1;
-    //printf("CheckRook\n");
-    //PrintTable(table);
+    printf("where: %d:%d\n",list->items[i].row,list->items[i].column);
+    printf("which: %d\n add_row:%d col:%d\n",melyik_mezo,add_row,add_column);
     do{
         if(melyik_mezo == 1){
             curr_column += add_column;
@@ -39,11 +41,12 @@ int CheckInstanceRook(int curr_row, int curr_column, int where_row, int where_co
         else{
             curr_row += add_row;                 
         }
-        if(curr_row > 7 || curr_column > 7 || curr_row < 0 || curr_column < 0) break;
-    } while(curr_row <= 7 && curr_column <= 7 && curr_row >= 0 && curr_column >= 0 && table[curr_row][curr_column].type == EMPTY);
-    if(table[curr_row][curr_column].type == KING && table[curr_row][curr_column].color == opposite_color && !check){
-        printf("Ez a lépés sakkot adna!\n");
-        return 1;
+    } while(curr_row < 7 && curr_column < 7 && curr_row > 0 && curr_column > 0 && table[curr_row][curr_column].type == EMPTY);
+    if(table[curr_row][curr_column].type == KING && table[curr_row][curr_column].color == opposite_color && !check && to_column != -1){
+        if(!(melyik_mezo == 0 && to_column == list->items[i].column) || (melyik_mezo == 1 && to_row == list->items[i].row)){
+            printf("Ez a lépés sakkot adna!\n");
+            return 1;
+        }
     }
     else if(table[curr_row][curr_column].type == KING && table[curr_row][curr_column].color == opposite_color){
         *isDiscoveredCheck = true;
@@ -77,18 +80,18 @@ int CheckInstances(int where_row, int where_column, int to_row, int to_column, P
             int curr_column = where_column;
             switch(list->items[i].piece){
                 case BISHOP:
-                    if (CheckInstanceBishop(curr_row, curr_column, where_row, where_column, to_row, i, list, check_depth, table, opposite_color, check, isDiscoveredCheck) == 1) return 1;            
+                    if (CheckInstanceBishop(curr_row, curr_column, where_row, where_column, to_row, to_column, i, list, check_depth, table, opposite_color, check, isDiscoveredCheck) == 1) return 1;            
                     break;
                 case ROOK:
-                    if (CheckInstanceRook(curr_row, curr_column, where_row, where_column, to_column, i, list, check_depth, table, opposite_color, check, isDiscoveredCheck) == 1) return 1;            
+                    if (CheckInstanceRook(curr_row, curr_column, where_row, where_column, to_row, to_column, i, list, check_depth, table, opposite_color, check, isDiscoveredCheck) == 1) return 1;            
                     break;
                 case QUEEN:
                     //printf("Queen: %d:%d\n",list->items[i].row,list->items[i].column);
                     if(abs(list->items[i].row - curr_row) == abs(list->items[i].column - curr_column)){
-                        if(CheckInstanceBishop(curr_row, curr_column, where_row, where_column, to_row, i, list, check_depth, table, opposite_color, check, isDiscoveredCheck) == 1) return 1;  
+                        if(CheckInstanceBishop(curr_row, curr_column, where_row, where_column, to_row, to_column, i, list, check_depth, table, opposite_color, check, isDiscoveredCheck) == 1) return 1;  
                     }
                     else{
-                        if(CheckInstanceRook(curr_row, curr_column, where_row, where_column, to_column, i, list, check_depth, table, opposite_color, check, isDiscoveredCheck) == 1) return 1;  
+                        if(CheckInstanceRook(curr_row, curr_column, where_row, where_column, to_row, to_column, i, list, check_depth, table, opposite_color, check, isDiscoveredCheck) == 1) return 1;  
                     }
                     break;               
                 default:
