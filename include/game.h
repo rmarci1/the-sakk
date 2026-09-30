@@ -71,6 +71,9 @@
     bool IsDepthNotPawnOrKing(PiecePlace*, int, Piece[HEIGHT][WIDTH], PieceColor, bool, PieceList[HEIGHT][WIDTH]);
     bool isMate(Piece[HEIGHT][WIDTH], PieceList[HEIGHT][WIDTH], PieceList[HEIGHT][WIDTH], 
     int[2], PieceList[HEIGHT][WIDTH], bool, PieceColor);
-    void clearLastDoubleMove(PiecePlace*);
     char getch_new(void);
+    void CleanDepthList(PieceList[HEIGHT][WIDTH], PieceList[HEIGHT][WIDTH], bool, 
+    bool, PiecePlace*, PiecePlace, Location, Location, bool, int[PIECE_MAX_COUNT][2], int[PIECE_MAX_COUNT][2], 
+    int[PIECE_MAX_COUNT][2], int[PIECE_MAX_COUNT][2],int[PIECE_MAX_COUNT-1][2], 
+    int[PIECE_MAX_COUNT-1][2]);
 #endif

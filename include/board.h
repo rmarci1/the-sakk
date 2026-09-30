@@ -6,7 +6,7 @@
     #include "list.h"
     #include "config.h"
     #include "types.h"
-
+    #include "ui.h"
     extern PieceList check_depth_white[HEIGHT][WIDTH];
     extern PieceList check_depth_black[HEIGHT][WIDTH];
     extern PieceList black_pawn_moves[HEIGHT][WIDTH];
@@ -42,7 +42,7 @@
         bool, bool, PieceColor, bool);
     bool IsCheck(char, int, int, int[2], Piece[HEIGHT][WIDTH]);
     bool IsKnightCheck(Piece[HEIGHT][WIDTH], PieceColor, int, int);
-    bool KingCheck(int, int, bool);
+    bool KingCheck(int, int, bool, bool);
     int IsCheckChanged(Piece[HEIGHT][WIDTH], int, int, int, int, bool, int[2]);
     int IsCheckEqualsToMove(bool, bool);
     int ChangingTablePositions(Piece[HEIGHT][WIDTH], int, int, int, int, bool, bool, 

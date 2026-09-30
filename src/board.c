@@ -3,10 +3,10 @@ int CheckInstanceBishop(int curr_row, int curr_column, int where_row, int where_
     PieceList check_depth[HEIGHT][WIDTH], Piece table[HEIGHT][WIDTH], PieceColor opposite_color, bool check, bool* isDiscoveredCheck){
     int add_row = curr_row > list->items[i].row ? 1 : -1;
     int add_column = curr_column > list->items[i].column ? 1 : -1;
-    do{
+    while(table[curr_row][curr_column].type == EMPTY && curr_row < 7 && curr_column < 7 && curr_row > 0 && curr_column > 0){
         curr_row += add_row;
         curr_column += add_column;                  
-    } while(table[curr_row][curr_column].type == EMPTY && curr_row < 7 && curr_column < 7 && curr_row > 0 && curr_column > 0);
+    };
     if(table[curr_row][curr_column].type == KING && table[curr_row][curr_column].color == opposite_color && !check){
         if(to_row != -1 && (abs(list->items[i].row - to_row) == abs(list->items[i].column - to_col)) && (abs(to_row - curr_row) == abs(to_col - curr_column))){
             printf("Ez a lépés sakkot adna!\n");
@@ -32,14 +32,15 @@ int CheckInstanceRook(int curr_row, int curr_column, int where_row, int where_co
     int melyik_mezo = list->items[i].row == curr_row ? 1 : 0;
     int add_row = curr_row > list->items[i].row ? 1 : -1;
     int add_column = curr_column > list->items[i].column ? 1 : -1;
-    do{
+    while(curr_row < 7 && curr_column < 7 && curr_row > 0 && curr_column > 0 && table[curr_row][curr_column].type == EMPTY);
+    {
         if(melyik_mezo == 1){
             curr_column += add_column;
         }
         else{
             curr_row += add_row;                 
         }
-    } while(curr_row < 7 && curr_column < 7 && curr_row > 0 && curr_column > 0 && table[curr_row][curr_column].type == EMPTY);
+    }
     if(table[curr_row][curr_column].type == KING && table[curr_row][curr_column].color == opposite_color && !check && to_column != -1){
         if(!(melyik_mezo == 0 && to_column == list->items[i].column) || (melyik_mezo == 1 && to_row == list->items[i].row)){
             printf("Ez a lépés sakkot adna!\n");
@@ -180,10 +181,11 @@ bool IsKnightCheck(Piece table[HEIGHT][WIDTH], PieceColor opposite, int sor, int
     }
     return false;
 }
-bool KingCheck(int sor, int oszlop, bool takes){
+bool KingCheck(int sor, int oszlop, bool takes, bool king_incheck){
     return (!(takes && checkingPiece.row == sor && checkingPiece.column == oszlop) && (
+            king_incheck && (
            ((checkingPiece.piece == ROOK || checkingPiece.piece == QUEEN) && (sor == checkingPiece.row || oszlop == checkingPiece.column)) || 
-           ((checkingPiece.piece == BISHOP || checkingPiece.piece == QUEEN) && (abs(sor-checkingPiece.row) == abs(oszlop-checkingPiece.column)))));
+           ((checkingPiece.piece == BISHOP || checkingPiece.piece == QUEEN) && (abs(sor-checkingPiece.row) == abs(oszlop-checkingPiece.column))))));
 }
 int IsCheckChanged(Piece table[HEIGHT][WIDTH], int sor, int oszlop, int hova_sor, int hova_oszlop, bool takes, int king[2]){
     Piece temp_from = table[hova_sor][hova_oszlop];
@@ -226,7 +228,6 @@ int IsCheckEqualsToMove(bool isCheck, bool check){
     }
     else if(isCheck && !check){
         printf("Ez a lépés sakkot adna!\n");
-        printf("Here?\n");
         return 1;
     }
     return 0;
@@ -524,12 +525,12 @@ int CheckPawnMoves(PieceColor turn, PieceList pawn_moves[HEIGHT][WIDTH], int row
 int CheckPawnTypes(PieceList pawn_moves[HEIGHT][WIDTH], int row, int column, int add, Piece table[HEIGHT][WIDTH], PiecePlace pawn, 
     PieceColor opposite){
     // Megnézi hogy milyen gyalog lépés típusokra adjon a pawn_moves listához; 
-    if(table[row+(add*-1)][column+1].type == PAWN && table[row+(add*-1)][column+1].color == opposite){
+    if(table[row+add][column+1].type == PAWN && table[row+add][column+1].color == opposite){
         pawn.row = row+add*-1;
         pawn.column = column+1;
         addPiece(&pawn_moves[row][column], pawn);
     }
-    if(table[row+(add*-1)][column-1].type == PAWN && table[row+(add*-1)][column-1].color == opposite){
+    if(table[row+add][column-1].type == PAWN && table[row+add][column-1].color == opposite){
         pawn.row = row+add*-1;
         pawn.column = column-1;
         addPiece(&pawn_moves[row][column], pawn);
@@ -553,7 +554,7 @@ int CheckPawnRows(Piece table[HEIGHT][WIDTH], PiecePlace pawn, int from_row, int
             addPiece(&black_pawn_moves[from_row+add*-1][from_column],pawn); 
         }
     }
-    return 0;
+    return 0; 
 }
 int CheckWhichPawnAffects(PieceList pawn_moves[HEIGHT][WIDTH], int from_row, int from_column, int to_row, int to_column, PieceColor curr,
     Piece table[HEIGHT][WIDTH], bool pawn_move, PiecePlace last_double_move, PieceColor turn, bool takes, bool is_pawn_taken, PieceType moveType){
@@ -579,17 +580,13 @@ int CheckWhichPawnAffects(PieceList pawn_moves[HEIGHT][WIDTH], int from_row, int
     pawn.piece = PAWN;
     if(!(takes && is_pawn_taken && turn != curr) && !takes){
         if(to_row+add*-1 == 1 && curr == BLACK && !pawn_move && table[to_row+add*-1][to_column].type == PAWN && table[to_row+add*-1][to_column].color == WHITE){
-            printf("inremove1\n");
             removePiece(&pawn_moves[to_row+1][to_column], pawn_moves[to_row+1][to_column].items[0]);
         }
         else if(to_row+add*-1 == 6 && curr == WHITE && !pawn_move && table[to_row+add*-1][to_column].type == PAWN && table[to_row+add*-1][to_column].color == BLACK){
-            printf("inremove2\n");
             removePiece(&pawn_moves[to_row-1][to_column], pawn_moves[to_row-1][to_column].items[0]);
         }
     }
     
-
-    //printf("row: %d, opposite: %s \n",from_row+add,opposite == WHITE ? "white" : "black");
     if(curr == WHITE){
         if (table[from_row+1][from_column].type == PAWN)
         {
@@ -597,7 +594,7 @@ int CheckWhichPawnAffects(PieceList pawn_moves[HEIGHT][WIDTH], int from_row, int
         }    
         if (table[from_row-1][from_column].type == PAWN)
         {
-           CheckPawnRows(table,pawn,from_row,from_column,to_row,to_column,-1,WHITE);
+            CheckPawnRows(table,pawn,from_row,from_column,to_row,to_column,-1,WHITE);
         }    
     }
     if(table[from_row+add*-2][from_column].type == PAWN && table[from_row+add*-1][from_column].type == EMPTY && (from_row+add*-2 == 1 || from_row+add*-2 == 6) && table[from_row+add*-2][from_column].color == opposite){
@@ -606,14 +603,15 @@ int CheckWhichPawnAffects(PieceList pawn_moves[HEIGHT][WIDTH], int from_row, int
         addPiece(&pawn_moves[from_row][from_column],pawn);
     }
     //CheckPawnTypes(pawn_moves, from_row, from_column, add, table, pawn, opposite, true);
-    CheckPawnTypes(pawn_moves, to_row, to_column, add, table, pawn, opposite);
-    if(last_double_move.piece != EMPTY && table[last_double_move.row][last_double_move.column+1].type == PAWN 
+    int add2 = turn == WHITE ? -1 : 1;
+    if(turn != curr) CheckPawnTypes(pawn_moves, to_row, to_column, add2, table, pawn, opposite);
+    if(last_double_move.row != -1 && table[last_double_move.row][last_double_move.column+1].type == PAWN 
         && table[last_double_move.row][last_double_move.column+1].color == opposite){
         pawn.row = last_double_move.row;
         pawn.column = last_double_move.column+1;
         addPiece(&pawn_moves[last_double_move.row+add][last_double_move.column], pawn);
     }
-    if(last_double_move.piece != EMPTY && table[last_double_move.row][last_double_move.column-1].type == PAWN 
+    if(last_double_move.row != -1 && table[last_double_move.row][last_double_move.column-1].type == PAWN 
         && table[last_double_move.row][last_double_move.column-1].color == opposite){
         pawn.row = last_double_move.row;
         pawn.column = last_double_move.column-1;

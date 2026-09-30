@@ -3,19 +3,15 @@
     
     #include "imports.h"
     #include "piece.h"
-    #include "config.h"
     #include "board.h"
     #include "types.h"
-    typedef struct {
-        int current_turn;
-        char move[MOVE_MAX_LENGTH];
-    } Move;
+    #include "list.h"
 
     int PawnMove(char[MOVE_MAX_LENGTH], int[2], bool*, Piece[HEIGHT][WIDTH], 
         PieceColor, bool, bool, PiecePlace*, bool*);
     int PawnTakes(char[MOVE_MAX_LENGTH], Piece[HEIGHT][WIDTH], PieceColor, 
-        bool, PiecePlace, bool, int[2], bool*, bool);
-    int EnPassant(int, int, int, PiecePlace, PieceColor, Piece[HEIGHT][WIDTH], bool, bool, int[2]);
+        bool, PiecePlace*, bool, int[2], bool*, bool);
+    int EnPassant(int, int, int, PiecePlace*, PieceColor, Piece[HEIGHT][WIDTH], bool, bool, int[2]);
     int Promote(int, int, int, char, Piece[HEIGHT][WIDTH], bool, PieceColor, bool, int[2], bool*);
     int KnightMove(char[MOVE_MAX_LENGTH], int[2], bool*, Piece[HEIGHT][WIDTH], PieceColor, bool, 
         bool, int, int, int);
@@ -34,4 +30,6 @@
     int ChangeRookPosition(int, int, int, int, int, int[PIECE_MAX_COUNT][2]);
     int isPieceFoundCorrect(Piece[HEIGHT][WIDTH], int*, int, int, int, int, bool, 
     PieceColor, char*, char*);
+    void clearLastDoubleMove(PiecePlace*);
+
 #endif

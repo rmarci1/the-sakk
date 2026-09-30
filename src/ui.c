@@ -79,11 +79,12 @@ void OldPrintTableForTest(Piece table[HEIGHT][WIDTH], PrintMove print_move){
             }
             else if( (i + y) % 2 == 0 ){
                 //printf("\033[100m %s \033[0m",t);
-                /*if(black_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
+                /*if(black_pawn_moves[i][y].size==1) printf("\033[41m %s \033[0m",t);
+                else if(black_pawn_moves[i][y].size>1) printf("\033[42m %s \033[0m",t);
                 else {
                     printf("\033[100m %s \033[0m",t);
                 }*/
-                switch ( check_depth_black[i][y].size)
+                switch ( check_depth_white[i][y].size)
                 {
                     case 1:
                         printf("\033[41m %s \033[0m",t);
@@ -108,10 +109,11 @@ void OldPrintTableForTest(Piece table[HEIGHT][WIDTH], PrintMove print_move){
             else {
                 //printf("\033[40m %s \033[0m",t);
                 /*if(black_pawn_moves[i][y].size>0) printf("\033[41m %s \033[0m",t);
+                else if(black_pawn_moves[i][y].size>1) printf("\033[42m %s \033[0m",t);
                 else {
                     printf("\033[40m %s \033[0m",t);
                 }*/
-                switch ( check_depth_black[i][y].size)
+                switch ( check_depth_white[i][y].size)
                 {
                     case 1:
                         printf("\033[41m %s \033[0m",t);

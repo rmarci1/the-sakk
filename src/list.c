@@ -37,7 +37,7 @@ void removePiece(PieceList* list,PiecePlace piece){
         freePieceList(list);
     }
     else{
-        list->items = realloc(list->items, list-> capacity * sizeof(PiecePlace));
+        list->items = realloc(list->items, list-> capacity * sizeof(PiecePlace));   
         if (!list->items) {
             perror("realloc failed");
             exit(1);
@@ -82,10 +82,11 @@ int RemovePieceFromList(int list[PIECE_MAX_COUNT][2], int* count, int sor, int o
     int j = -1;
     int i = -1;
     while(i<*count && (list[j][0] != sor || list[j][1] != oszlop))
-    {
+    {   
         i++;
         j++;
         while(list[j][0] == -1) j++;    
+        if(i<*count) printf("Sor: %d, Oszlop: %d\n",list[j][0],list[j][1]);
     }
     if(i==*count){
         printf("Hiba van a Remove résznél a programba!\n");
@@ -108,6 +109,11 @@ int RemoveType(Piece table[HEIGHT][WIDTH], int sor, int oszlop, PieceColor turn)
                 return 1;
             }
         }
+        else if(table[sor][oszlop].type == QUEEN){
+            if(RemovePieceFromList(*p_black_queens, p_bqueencount, sor, oszlop) == 1){
+                return 1;
+            }
+        }
     }
     else{
         if(table[sor][oszlop].type == BISHOP){
@@ -117,6 +123,11 @@ int RemoveType(Piece table[HEIGHT][WIDTH], int sor, int oszlop, PieceColor turn)
         }
         else if(table[sor][oszlop].type == ROOK){
             if(RemovePieceFromList(*p_white_rooks, p_wrookcount, sor, oszlop) == 1){
+                return 1;
+            }
+        }
+        else if(table[sor][oszlop].type == QUEEN){
+            if(RemovePieceFromList(*p_white_queens, p_wqueencount, sor, oszlop) == 1){
                 return 1;
             }
         }

@@ -67,11 +67,11 @@ int main(){
         switch (menu)
         {
         case 's':
-            curr_row = curr_row+1 <= MENU_MAX_LENGTH ? ++curr_row : curr_row;
+            curr_row = curr_row+1 <= MENU_MAX_LENGTH ? curr_row+1 : curr_row;
             break;
         
         case 'w':
-            curr_row = curr_row-1 >= MENU_MIN_LENGTH ? --curr_row : curr_row;
+            curr_row = curr_row-1 >= MENU_MIN_LENGTH ? curr_row-1 : curr_row;
             break;
         case CTRL_C:
             menu_end = true;
@@ -105,11 +105,11 @@ int main(){
                             next_menu = true;
                             break;
                         case 'd':
-                            table_skins = table_skins == 2 ? 0 : ++table_skins; 
+                            table_skins = table_skins == 2 ? 0 : table_skins+1; 
                             SwitchSkins(table_skins);
                             break;
                         case 'a':
-                            table_skins = table_skins == 0 ? 2 : --table_skins; 
+                            table_skins = table_skins == 0 ? 2 : table_skins-1; 
                             SwitchSkins(table_skins);
                             break;
                         default:

@@ -2,6 +2,7 @@
 #define PIECE_H
     #include "imports.h"
     #include "types.h"
+    #include "config.h"
     typedef enum{
         KING,
         QUEEN,
@@ -30,6 +31,10 @@
         int size;
         int capacity;
     } PieceList;
+    typedef struct {
+        int current_turn;
+        char move[MOVE_MAX_LENGTH];
+    } Move;
     extern Location from_move;
     extern Location to_move;
     extern bool black_king_inCheck;

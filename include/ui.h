@@ -13,10 +13,7 @@
     #define CTRL_C 3
     
     #include "imports.h"
-    #include "board.h"
-    #include "move.h"
-
-    
+    #include "move.h"    
     typedef struct {
         Move moves[16];
         int length;

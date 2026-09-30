@@ -193,8 +193,8 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
         if (curr_row >= 0 && curr_row <= 7){
             for (int j = 0; j < 3; j++)
             {   
-                if(curr_column <= 7 && curr_column >= 0 && !KingCheck(curr_row,curr_column,check) && (table[curr_row][curr_column].type == EMPTY && check_depth[curr_row][curr_column].size <= 0)){
-                    //printf("\nCan move to:%d %d\n ",curr_row,curr_column);
+                if(curr_column <= 7 && curr_column >= 0 && !KingCheck(curr_row, curr_column, check, true) && (table[curr_row][curr_column].type == EMPTY && check_depth[curr_row][curr_column].size <= 0)){
+                    printf("\nCan move to:%d %d\n ",curr_row, curr_column);
                     return false;
                 }   
                 curr_column += 1;
@@ -216,10 +216,12 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
             bool canBlock = IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size, table, opposite, false, check_depth);
             bool canBlockWithPawn = pawn_moves[starting_row][starting_col].size > 0 && IsDepthNotPawnOrKing(pawn_moves[starting_row][starting_col].items, pawn_moves[starting_row][starting_col].size, table, opposite, true, check_depth);
             if(canBlock || canBlockWithPawn){
+                printf("\nCan move to:%d %d\n ",starting_row, starting_col);
                 return false;
             }
             starting_row += row_inc;
             starting_col += col_inc;
+            if(starting_row < 0 || starting_row > 7 || starting_col < 0 || starting_col > 7) break;
         }
        
     }
@@ -235,23 +237,24 @@ bool isMate(Piece table[HEIGHT][WIDTH], PieceList check_depth[HEIGHT][WIDTH], Pi
             bool canBlock = IsDepthNotPawnOrKing(opposite_check_depth[starting_row][starting_col].items, opposite_check_depth[starting_row][starting_col].size, table, opposite, false, check_depth);
             bool canBlockWithPawn = pawn_moves[starting_row][starting_col].size > 0 && IsDepthNotPawnOrKing(pawn_moves[starting_row][starting_col].items, pawn_moves[starting_row][starting_col].size, table, opposite, true, check_depth);
             if(canBlock || canBlockWithPawn){
+                printf("\nCan move to:%d %d\n ",starting_row, starting_col);
                 return false;
             }
             starting_row += row_inc;
             starting_col += col_inc;
             if(row_or_col) starting_col += col_inc;
             else starting_row += row_inc;
+            if(starting_row < 0 || starting_row > 7 || starting_col < 0 || starting_col > 7) break;
         } 
     }
     return true;
 }
-void clearLastDoubleMove(PiecePlace* last_double_move){
-    (*last_double_move).piece = EMPTY;
-    (*last_double_move).row = -1;
-    (*last_double_move).column = -1;
-}
+
 void CleanDepthList(PieceList temp_white[HEIGHT][WIDTH], PieceList temp_black[HEIGHT][WIDTH], bool white_king_inCheck_temp, 
-    bool black_king_inCheck_temp, PiecePlace* last_double_move, PiecePlace last_double_move_temp, Location temp_from_move, Location temp_to_move, bool temp_double_check){
+    bool black_king_inCheck_temp, PiecePlace* last_double_move, PiecePlace last_double_move_temp, Location temp_from_move, Location temp_to_move, 
+    bool temp_double_check, int temp_white_bishops[PIECE_MAX_COUNT][2], int temp_black_bishops[PIECE_MAX_COUNT][2], 
+    int temp_white_rooks[PIECE_MAX_COUNT][2], int temp_black_rooks[PIECE_MAX_COUNT][2],int temp_white_queens[PIECE_MAX_COUNT-1][2], 
+    int temp_black_queens[PIECE_MAX_COUNT-1][2]){
     piece_list_copy(check_depth_white,temp_white);
     piece_list_copy(check_depth_black,temp_black);
     white_king_inCheck = white_king_inCheck_temp;
@@ -260,6 +263,13 @@ void CleanDepthList(PieceList temp_white[HEIGHT][WIDTH], PieceList temp_black[HE
     from_move = temp_from_move;
     to_move = temp_to_move;
     double_check = temp_double_check;
+    memcpy(white_bishops, temp_white_bishops, sizeof(white_bishops));
+    memcpy(black_bishops, temp_black_bishops, sizeof(black_bishops));
+    memcpy(white_rooks, temp_white_rooks, sizeof(white_rooks));
+    memcpy(black_rooks, temp_black_rooks, sizeof(black_rooks));
+    memcpy(white_queens, temp_white_queens, sizeof(white_queens));
+    memcpy(black_queens, temp_black_queens, sizeof(black_queens));
+
 }
 int game(Piece table[HEIGHT][WIDTH]){
 
@@ -275,14 +285,14 @@ int game(Piece table[HEIGHT][WIDTH]){
     bool right_white_rook_moved = false;
     PiecePlace last_double_move;
     last_double_move.piece = EMPTY;
-    
-
+    last_double_move.row = -1;
+    last_double_move.column = -1;
     int vege = 0;
     int lepesek_szama = 1;
     int* p_lepesek = &lepesek_szama;
     PieceColor turn = WHITE;
     printf("\033[2J");
-    OldPrintTableForTest(table,print_moves);
+    PrintTable(table,print_moves);
     while (vege == 0)
     {   
         printf("\033[2K");
@@ -322,6 +332,21 @@ int game(Piece table[HEIGHT][WIDTH]){
         Location temp_to_move = to_move;
         bool white_king_inCheck_temp = white_king_inCheck;
         bool black_king_inCheck_temp = black_king_inCheck;
+
+        int temp_white_bishops[PIECE_MAX_COUNT][2];
+        int temp_black_bishops[PIECE_MAX_COUNT][2];
+
+        int temp_white_rooks[PIECE_MAX_COUNT][2];
+        int temp_black_rooks[PIECE_MAX_COUNT][2];
+
+        int temp_white_queens[PIECE_MAX_COUNT-1][2];
+        int temp_black_queens[PIECE_MAX_COUNT-1][2];
+        memcpy(temp_white_bishops, white_bishops, sizeof(white_bishops));
+        memcpy(temp_black_bishops, black_bishops, sizeof(black_bishops));
+        memcpy(temp_white_rooks, white_rooks, sizeof(white_rooks));
+        memcpy(temp_black_rooks, black_rooks, sizeof(black_rooks));
+        memcpy(temp_white_queens, white_queens, sizeof(white_queens));
+        memcpy(temp_black_queens, black_queens, sizeof(black_queens));
         piece_list_copy(temp_white, check_depth_white);
         piece_list_copy(temp_black, check_depth_black);
         
@@ -329,6 +354,18 @@ int game(Piece table[HEIGHT][WIDTH]){
         bool isCorrect = false;
         bool wasMoveDouble = false;
         bool temp_double_check = double_check;
+        /*printf("\n--Queens, turn: %s\n", turn == WHITE ? "White" : "Black");
+        int i = 0;
+        int j = 0;
+        int count = turn == WHITE ? *p_wqueencount : *p_bqueencount;
+        while(i<count){    
+            if(i<count) printf("%d: %d\n",turn == WHITE ? white_queens[j][0] : black_queens[j][0], turn == WHITE ? white_queens[j][1] : black_queens[j][1]);
+            i++;
+            j++;
+            while(white_queens[j][0] == -1){
+                j++;
+            }
+        }*/
         if(double_check && lepes[0] == 'K') double_check = false;
         if(double_check && lepes[0] != 'K'){
             printf("Ez nem állítja meg a sakkot! (Kettős sakk)");
@@ -381,7 +418,7 @@ int game(Piece table[HEIGHT][WIDTH]){
             }
             else if(strcmp(lepes,"O-O") == 0){
                 if(Castle(turn == WHITE ? white_king : black_king, turn == WHITE ? black_king : white_king, table, turn, turn == WHITE ? &white_king_moved : &black_king_moved, true, turn == WHITE?
-                left_white_rook_moved : left_black_rook_moved, turn == WHITE ? right_black_rook_moved : right_white_rook_moved, turn == WHITE ? 7 : 0, 7, empty, 
+                left_white_rook_moved : left_black_rook_moved, turn == WHITE ? right_white_rook_moved : right_black_rook_moved, turn == WHITE ? 7 : 0, 7, empty, 
                 turn == WHITE ? white_rooks : black_rooks, turn == WHITE ? white_rook_count : black_rook_count, 
                 check, turn == WHITE ? check_depth_white : check_depth_black, takes, turn == WHITE ? &black_king_inCheck : &white_king_inCheck) == 0){
                     isCorrect = true;
@@ -389,7 +426,7 @@ int game(Piece table[HEIGHT][WIDTH]){
             }   
             else if (strcmp(lepes,"O-O-O") == 0){
                 if(Castle(turn == WHITE ? white_king : black_king, turn == WHITE ? black_king : white_king, table, turn, turn == WHITE ? &white_king_moved : &black_king_moved, false, turn == WHITE?
-                left_white_rook_moved : left_black_rook_moved, turn == WHITE ? right_black_rook_moved : right_white_rook_moved, turn == WHITE ? 7 : 0, 0, 
+                left_white_rook_moved : left_black_rook_moved, turn == WHITE ? right_white_rook_moved : right_black_rook_moved, turn == WHITE ? 7 : 0, 0, 
                 empty, turn == WHITE ? white_rooks : black_rooks, turn == WHITE ? white_rook_count : black_rook_count, 
                 check, turn == WHITE ? check_depth_white : check_depth_black, takes, turn == WHITE ? &black_king_inCheck : &white_king_inCheck) == 0){
                     isCorrect = true;
@@ -417,9 +454,9 @@ int game(Piece table[HEIGHT][WIDTH]){
         }
         if(isCorrect){
             if(wasMoveDouble){
-            if(turn == WHITE){
-                while(black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column].size > 0){
-                    removePiece(&black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column],
+                if(turn == WHITE){
+                    while(black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column].size > 0){
+                        removePiece(&black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column],
                         black_pawn_moves[temp_last_double_move.row-1][temp_last_double_move.column].items[0]);
                     }
                 }
@@ -427,11 +464,11 @@ int game(Piece table[HEIGHT][WIDTH]){
                     while(white_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column].size > 0){
                         removePiece(&black_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column],
                             white_pawn_moves[temp_last_double_move.row+1][temp_last_double_move.column].items[0]);
-                        }
                     }
-                    last_double_move.piece = EMPTY;
-                    last_double_move.row = -1;
-                    last_double_move.column = -1;
+                }
+                last_double_move.piece = EMPTY;
+                last_double_move.row = -1;
+                last_double_move.column = -1;
                     
             }
             if(check && isMate(table, turn == WHITE ? check_depth_black : check_depth_white, turn == WHITE ? check_depth_white : check_depth_black,
@@ -459,11 +496,12 @@ int game(Piece table[HEIGHT][WIDTH]){
             }
         }
         else{
-            CleanDepthList(temp_white, temp_black, white_king_inCheck_temp, black_king_inCheck_temp, &last_double_move, temp_last_double_move,temp_from_move,temp_to_move, temp_double_check);
+            CleanDepthList(temp_white, temp_black, white_king_inCheck_temp, black_king_inCheck_temp, &last_double_move, temp_last_double_move,temp_from_move,temp_to_move, temp_double_check,
+                temp_white_bishops, temp_black_bishops, temp_white_rooks, temp_black_rooks, temp_white_queens, temp_black_queens);
         }
         freeAllPieceList(temp_white);
         freeAllPieceList(temp_black);
-        OldPrintTableForTest(table,print_moves);
+        PrintTable(table,print_moves);
     }
     return 0;
 }
